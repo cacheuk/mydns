@@ -228,6 +228,9 @@ update_gobble_rr(TASK *t, MYDNS_SOA *soa, char *query, size_t querylen, char *cu
 	DNS_GET16(rr->class, src);
 	DNS_GET32(rr->ttl, src);
 	DNS_GET16(rr->rdlength, src);
+	if(rr->rdlength > sizeof rr->rdata)
+		rr->rdlength = sizeof rr->rdata;
+
 	memcpy(rr->rdata, src, rr->rdlength);
 	src += rr->rdlength;
 
@@ -328,19 +331,16 @@ text_retrieve(char *src, char *end, char *data, size_t datalen, int one_word_onl
 {
 	int n, x;														/* Offset in 'data' */
 
-	for (n = 0; src < end && n < datalen; )
+	for (n = 0; src < end && n < datalen - 1; )
 	{
 		int len = *src++;
 
 		if (n)
 			data[n++] = ' ';
-		for (x = 0; x < len && src < end && n < datalen; x++)
+		for (x = 0; x < len && src < end && n < datalen - 1; x++)
 			data[n++] = *src++;
 		if (one_word_only)
-		{
-			data[n] = '\0';
-			return (src);
-		}
+			break;
 	}
 	data[n] = '\0';
 	return (src);
