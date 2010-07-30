@@ -60,6 +60,7 @@ find_alias(TASK *t, char *fqdn)
 				Debug("%s: trying exact match `%s'", desctask(t), label);
 #endif
 				if ((rr = find_rr(t, soa, DNS_QTYPE_A, label)))
+					mydns_soa_free(soa);
 					return (rr);
 			}
 
@@ -79,12 +80,14 @@ find_alias(TASK *t, char *fqdn)
 				Debug("%s: trying wildcard `%s'", desctask(t), wclabel);
 #endif
 				if ((rr = find_rr(t, soa, DNS_QTYPE_A, wclabel)))
+					mydns_soa_free(soa);
 					return (rr);
 			}
 		}
 		if (!*label)
 			break;
 	}
+	mydns_soa_free(soa);
 	return (NULL);
 }
 /*--- find_alias() ------------------------------------------------------------------------------*/
