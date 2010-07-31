@@ -75,6 +75,7 @@ reply_add_additional(TASK *t, RRLIST *rrlist, datasection_t section)
 				Debug("%s: resolving `%s' (A) for ADDITIONAL data", desctask(t), rr->data);
 #endif
 				(void)resolve(t, ADDITIONAL, DNS_QTYPE_A, rr->data, 0);
+				(void)resolve(t, ADDITIONAL, DNS_QTYPE_AAAA, rr->data, 0);
 			}
 			else if (rr->type == DNS_QTYPE_CNAME)
 			{
