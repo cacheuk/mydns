@@ -1,0 +1,50 @@
+Secret Key Transaction Authentication for MyDNS (TSIG)
+
+This protocol allows for transaction level authentication using
+shared secrets and one way hashing (using the HMAC-MD5 algorithm). 
+
+It can be used to authenticate dynamic updates as coming from an 
+approved client.
+
+
+DATABASE SETUP
+--------------
+
+Transaction Keys are stored in the 'dnskey' table and the name of the key
+allowed to update an record is stored in column 'update_key' of the 'soa' table.
+
+You can generate you own key with dnssec-keygen tool :
+
+    dnssec-keygen  -a HMAC-MD5 -b 128 -n HOST client.domain.com
+
+Insert the value of this key in the 'dnskey' table :
+
+    INSERT INTO dnskey (name, algorithm, size, type, private) VALUES 
+    ('client.domain.com', 'HMAC-MD5', 128, 'HOST', 'IYrqgYuJaTkL2Xs34GZ7+w==');
+
+Add the 'update_acl' column in the 'soa' table :
+
+    ALTER TABLE `soa` ADD `update_key` VARCHAR( 255 ) ; 
+
+Assign the update key to an DNS entry :
+
+    UPDATE soa SET update_key = 'client.domain.com' WHERE origin='domain.com.';
+
+Restart the MyDNS server and check if the optional column 'update_key' was found :
+
+    # mydns -v
+    ...
+    mydns: optional 'update_key' column found in 'soa' table
+    ...
+ 
+USAGE 
+-----
+
+Update an domain entry with the nsupdate client :
+
+    $ nsupdate -d -y client.domain.com:IYrqgYuJaTkL2Xs34GZ7+w==
+    > server ns.domain.com
+    > zone domain.com
+    > update add entry.domain.com 60 A 192.168.0.1 
+    > send
+

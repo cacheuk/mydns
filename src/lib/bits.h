@@ -24,6 +24,7 @@
 
 #define SIZE16		sizeof(uint16_t)
 #define SIZE32		sizeof(uint32_t)
+#define SIZE48		SIZE16 + SIZE32
 
 
 /* Copy value of uint16_t `n' into `src'; Move `src' forward to next offset */
@@ -46,6 +47,20 @@
 	(src) += SIZE32; \
 }
 
+/* Copy value of uint32_t `n' into `dest'; Move `dest' forward to next offset */
+#define DNS_GET48(n, src) { \
+	register uchar *t_src = (uchar *)(src); \
+	(n) = ((uint64_t)t_src[0] << 40) \
+	    | ((uint64_t)t_src[1] << 32) \
+	    | ((uint64_t)t_src[2] << 24) \
+	    | ((uint64_t)t_src[3] << 16) \
+	    | ((uint64_t)t_src[4] << 8) \
+	    | ((uint64_t)t_src[5]) \
+	    ; \
+	(src) += SIZE48; \
+}
+
+
 /* Copy value of uint16_t `n' into `dest'; Move `dest' forward to next offset */
 #define DNS_PUT16(dest, n) { \
 	register uint16_t t_n = (uint16_t)(n); \
@@ -65,6 +80,19 @@
 	*t_dest   = t_n; \
 	(dest) += SIZE32; \
 }
+
+#define DNS_PUT48(dest, n) { \
+	register uint64_t t_n = (uint64_t)(n); \
+	register uchar *t_dest = (uchar *)(dest); \
+	*t_dest++ = t_n >> 40; \
+	*t_dest++ = t_n >> 32; \
+	*t_dest++ = t_n >> 24; \
+	*t_dest++ = t_n >> 16; \
+	*t_dest++ = t_n >> 8; \
+	*t_dest   = t_n; \
+	(dest) += SIZE48; \
+}
+
 
 /* Copy `len' bytes of data from `src' to `dest'; Move `dest' forward `len' bytes */
 #define DNS_PUT(dest, src, len) { \

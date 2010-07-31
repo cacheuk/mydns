@@ -418,4 +418,32 @@ ErrSQL(
 }
 /*--- ErrSQL() ----------------------------------------------------------------------------------*/
 
+/**************************************************************************************************
+	HEX
+   Dump a string representing memory in hexadecimal format
+**************************************************************************************************/
+unsigned char *hex(char *mem, int  len)
+{
+	 static char buf[BUFSIZ];
+    int idx;
+    int l = 0;
+
+    if (len <= 0)
+        return NULL;
+
+    if (mem == NULL)
+        return NULL;
+
+    memset(buf, 0, BUFSIZ);
+
+    for (idx = 0; idx < len && idx < BUFSIZ ; idx++)
+    {
+        l += sprintf (buf + l, "%02x", (unsigned char) mem[idx]);
+    }
+    buf[l - 1] = 0;
+    return(buf);
+} 
+/*--- hex() -------------------------------------------------------------------------------------*/
+
+
 /* vi:set ts=3: */

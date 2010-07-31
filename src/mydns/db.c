@@ -134,8 +134,42 @@ db_output_create_tables(void)
 	printf("  data       CHAR(128) NOT NULL,\n");
 	printf("  aux        INT UNSIGNED NOT NULL,\n");
 	printf("  ttl        INT UNSIGNED NOT NULL default '%u',\n", DNS_DEFAULT_TTL);
-	printf("  UNIQUE KEY rr (zone,name,type,data)\n");
+	printf("  UNIQUE KEY %s (zone,name,type,data)\n", mydns_rr_table_name);
 	printf(") TYPE=MyISAM;\n\n");
+#endif
+
+	/* Resource record table */
+	printf("--\n--  Table structure for table '%s' (dns keys)\n--\n", mydns_key_table_name);
+
+#if USE_PGSQL
+	printf("CREATE TABLE %s (\n", mydns_key_table_name);
+	printf("    id serial NOT NULL,\n");
+	printf("    name character varying(128) NOT NULL,\n");
+	printf("    algorithm character varying(8) NOT NULL,\n");
+	printf("    size integer,\n");
+	printf("    \"type\" character varying(5),\n");
+	printf("    public character varying(255) NOT NULL,\n");
+	printf("    private character varying(255) NOT NULL,\n");
+	printf("    CONSTRAINT dnskey_algorithm CHECK\n");
+   printf("    (((((((algorithm) = 'RSA') OR ((algorithm) = 'RSAMD5'))\n"); 
+   printf("    OR ((algorithm) = 'DH')) OR ((algorithm) = 'DSA'))\n");
+   printf("    OR ((algorithm) = 'HMAC-MD5'))),\n");
+	printf("    CONSTRAINT dnskey_type CHECK ((((((\"type\") = 'ZONE')\n");
+   printf("    OR ((\"type\") = 'HOST')) OR ((\"type\") = 'ENTRY'))\n");
+   printf("    OR ((\"type\") = 'USER')))\n");
+	printf(");\n\n");
+#else
+	printf("CREATE TABLE IF NOT EXISTS %s (\n", mydns_key_table_name);
+	printf("  id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,\n");
+	printf("  name       CHAR(128) NOT NULL,\n");
+	printf("  algorithm  ENUM('RSA','RSAMD5','DH','DSA','HMAC-MD5') NOT NULL,\n");
+	printf("  size       INT(4) UNSIGNED NOT NULL,\n");
+	printf("  type       ENUM('ZONE','HOST','ENTRY','USER') NOT NULL,\n");
+	printf("  public     CHAR(255) NOT NULL,\n");
+	printf("  private    CHAR(255) NOT NULL,\n");
+	printf("  UNIQUE KEY %s (name)\n", mydns_key_table_name);
+	printf(") TYPE=MyISAM;\n");
+	printf("\n");
 #endif
 
 	exit(EXIT_SUCCESS);
@@ -227,6 +261,7 @@ db_check_optional(void)
 	int old_soa_use_active = mydns_soa_use_active;
 	int old_soa_use_xfer = mydns_soa_use_xfer;
 	int old_soa_use_update_acl = mydns_soa_use_update_acl;
+	int old_soa_use_update_key = mydns_soa_use_update_key;
 	int old_rr_use_active = mydns_rr_use_active;
 
 	/* Check for soa.active */
@@ -237,12 +272,19 @@ db_check_optional(void)
 	/* Check for soa.xfer */
 	mydns_set_soa_use_xfer(sql);
 	if (mydns_soa_use_xfer != old_soa_use_xfer)
-		Verbose(_("optional 'xfer' column found in '%s' table"), mydns_soa_table_name);
+		Verbose(_("optonal 'xfer' column found in '%s' table"), mydns_soa_table_name);
 
 	/* Check for soa.update_acl */
 	mydns_set_soa_use_update_acl(sql);
 	if (mydns_soa_use_update_acl != old_soa_use_update_acl)
 		Verbose(_("optional 'update_acl' column found in '%s' table"), mydns_soa_table_name);
+
+#ifdef WITH_SSL
+   /* Check for soa.update_key */
+	mydns_set_soa_use_update_key(sql);
+	if (mydns_soa_use_update_key != old_soa_use_update_key)
+		Verbose(_("optional 'update_key' column found in '%s' table"), mydns_soa_table_name);
+#endif /* WITH_SSL */
 
 	/* Check for rr.active */
 	mydns_set_rr_use_active(sql);

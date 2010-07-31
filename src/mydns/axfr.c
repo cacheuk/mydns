@@ -125,7 +125,7 @@ axfr_reply(TASK *t)
 {
 	char len[2], *l = len;
 
-	build_reply(t, 0);
+	build_reply(t, 0, 0);
 	DNS_PUT16(l, t->replylen);
 	axfr_write(t, len, SIZE16);
 	axfr_write(t, t->reply, t->replylen);

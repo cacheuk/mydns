@@ -27,7 +27,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-CONF		*Conf = (CONF *)NULL;								/* Config options */
+CONFIG	*Conf = (CONFIG *)NULL;								/* Config options */
 int		opt_daemon = 0;										/* Run in background? (-d, --daemon) */
 char		*opt_conf = MYDNS_CONF;								/* Location of config file (-c, --conf) */
 uid_t		perms_uid = 0;											/* User permissions */
@@ -57,7 +57,7 @@ char		*dn_default_ns = NULL;								/* Default NS for directNIC */
 **
 **  If the 'name' is "-", the --dump-config option treats 'desc' as a header field.
 */
-static CONF defConfig[] = {
+static CONFIG defConfig[] = {
 /* name						value							desc	*/
 {	"-",						NULL,							N_("DATABASE INFORMATION")},
 {	"db-host",				"localhost",				N_("SQL server hostname")},
@@ -95,6 +95,7 @@ static CONF defConfig[] = {
 {	"ignore-minimum",		"no",							N_("Ignore minimum TTL for zone?")},
 {	"soa-table",			MYDNS_SOA_TABLE,			N_("Name of table containing SOA records")},
 {	"rr-table",				MYDNS_RR_TABLE,			N_("Name of table containing RR data")},
+{	"key-table",			MYDNS_KEY_TABLE,			N_("Name of table containing KEY")},
 
 #ifdef DN_COLUMN_NAMES
 {	"default-ns",			"ns0.example.com.",		N_("Default nameserver for all zones")},
@@ -117,7 +118,7 @@ dump_config(void)
 	time_t	time_now = time(NULL);
 	int		len = 0, w = 0, n, defaulted;
 	char		pair[512], buf[80];
-	CONF		*c;
+	CONFIG	*c;
 
 	/*
 	**	Pretty header

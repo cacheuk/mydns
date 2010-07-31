@@ -135,9 +135,9 @@ conf_get_option(char *str, char **namep, char **valuep)
 	Overwrite a value if defaulted.
 **************************************************************************************************/
 void
-conf_clobber(CONF **confp, char *name, char *value)
+conf_clobber(CONFIG **confp, char *name, char *value)
 {
-	CONF *conf = *confp, *c;									/* Start of list/found item */
+	CONFIG *conf = *confp, *c;									/* Start of list/found item */
 
 	if (!name || !value)
 		return;
@@ -157,11 +157,11 @@ conf_clobber(CONF **confp, char *name, char *value)
 	Sets a configuration value.
 **************************************************************************************************/
 void
-conf_set(CONF **confp, char *name, char *value, int defaulted)
+conf_set(CONFIG **confp, char *name, char *value, int defaulted)
 {
-	CONF *conf = *confp;											/* Start of list */
-	CONF *new;														/* New item to add */
-	register CONF *c;
+	CONFIG *conf = *confp;											/* Start of list */
+	CONFIG *new;														/* New item to add */
+	register CONFIG *c;
 
 	if (!name)
 		return;
@@ -192,7 +192,7 @@ conf_set(CONF **confp, char *name, char *value, int defaulted)
 		}
 
 	/* Add new item to array */
-	if (!(new = (CONF *)calloc(1, sizeof(CONF))))
+	if (!(new = (CONFIG *)calloc(1, sizeof(CONFIG))))
 		Err("calloc");
 	if (!(new->name = strdup(name)))
 		Err("strdup");
@@ -212,10 +212,10 @@ conf_set(CONF **confp, char *name, char *value, int defaulted)
 	Returns the value associated with the specified name.
 **************************************************************************************************/
 char *
-conf_get(CONF **confp, char *name, int *defaulted)
+conf_get(CONFIG **confp, char *name, int *defaulted)
 {
-	CONF *conf = *confp;											/* Start of list */
-	register CONF *c;
+	CONFIG *conf = *confp;											/* Start of list */
+	register CONFIG *c;
 
 	if (defaulted)
 		*defaulted = 1;
@@ -238,12 +238,12 @@ conf_get(CONF **confp, char *name, int *defaulted)
 	Load the MyDNS configuration file.
 **************************************************************************************************/
 void
-conf_load(CONF **confp, const char *filename)
+conf_load(CONFIG **confp, const char *filename)
 {
 	FILE	*fp;														/* Input file pointer */
 	char	linebuf[BUFSIZ];										/* Input line buffer */
 	char	*name, *value;											/* Name and value from `linebuf' */
-	CONF	*conf = *confp;										/* Config list */
+	CONFIG	*conf = *confp;										/* Config list */
 	int	lineno = 0;												/* Current line number in config */
 	struct stat st;												/* File stat for conf file */
 

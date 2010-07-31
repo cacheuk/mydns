@@ -21,6 +21,11 @@
 #ifndef _MYDNS_TASK_H
 #define _MYDNS_TASK_H
 
+#if WITH_SSL
+#  include "update.h"
+#  include "tsig.h"
+#endif 
+
 /* If defined, DYNAMIC_NAMES causes dynamic allocation of the encoded names list.  It's slow. */
 #define	DYNAMIC_NAMES	0
 
@@ -112,6 +117,18 @@ typedef struct _named_task
 	uint16_t			arcount;										/* "arcount", from header */
 
 	int				no_markers;									/* Do not use markers? */
+   
+#if WITH_SSL
+   KEY            *key;                               /* Transaction key */
+   unsigned char  tsig_keyname[DNS_MAXNAMELEN];       /* Transaction Key Name */
+   int            tsig_keynamelen;                    /* Transaction Key Name Len */
+   unsigned char  *tsig_key;                          /* Transaction Key */
+   int            tsig_keylen;                        /* Transaction Key Len */
+   unsigned char  *query_mac;                         /* Query digest */
+   int            query_maclen;                       /* Query digest Len */
+   uint16_t       originalid;
+   uint16_t       tsig_error;   
+#endif
 
 #if DYNAMIC_NAMES
 	char				**Names;										/* Names stored in reply */

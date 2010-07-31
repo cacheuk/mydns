@@ -27,6 +27,7 @@ char *mydns_soa_where_clause = NULL;
 int mydns_soa_use_active = 0;
 int mydns_soa_use_xfer = 0;
 int mydns_soa_use_update_acl = 0;
+int mydns_soa_use_update_key = 0;
 
 /* Make this nonzero to enable debugging within this source file */
 #define	DEBUG_LIB_SOA	0

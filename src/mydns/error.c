@@ -76,6 +76,10 @@ err_reason_str(TASK *t, task_error_t reason)
 		case ERR_FWD_RECURSIVE: return ((char *)_("Recursive_query_forwarding_error"));
 		case ERR_NO_UPDATE: return ((char *)_("UPDATE_denied"));
 		case ERR_PREREQUISITE_FAILED: return ((char *)_("UPDATE_prerequisite_failed"));
+		case ERR_TSIG_KEY_NOT_FOUND: return ((char *)_("TSIG_key_not_found"));
+		case ERR_TSIG_KEY_TOO_SHORT: return ((char *)_("TSIG_key_is_too_short"));
+		case ERR_TSIG_CLOCKSKEW: return ((char *)_("TSIG_clockskew"));
+		case ERR_TSIG_BADSIGN: return ((char *)_("TSIG_badsign"));
 	}
 	return ((char *)_("Unknown"));
 }

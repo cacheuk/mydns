@@ -26,6 +26,11 @@
 #include "mydns.h"
 #include "task.h"
 #include "cache.h"
+#include "update.h"
+
+#if WITH_SSL
+#  include "tsig.h"
+#endif
 
 #if HAVE_SYS_RESOURCE_H
 #	include <sys/resource.h>
@@ -94,7 +99,7 @@ extern SERVERSTATUS Status;
 
 
 /* Global variables */
-extern CONF		*Conf;											/* Config file data */
+extern CONFIG	*Conf;											/* Config file data */
 extern QUEUE	*Tasks;											/* Task queue */
 extern CACHE	*Cache;											/* Zone cache */
 extern time_t	current_time;									/* Current time */
@@ -185,7 +190,7 @@ extern int		recursive_fwd_read(TASK *);
 /* reply.c */
 extern int		reply_init(TASK *);
 extern void		build_cache_reply(TASK *);
-extern void		build_reply(TASK *, int);
+extern void		build_reply(TASK *, int, int);
 
 
 /* resolve.c */

@@ -65,7 +65,8 @@ am_mydns_OBJECTS = alias.$(OBJEXT) axfr.$(OBJEXT) cache.$(OBJEXT) \
 	error.$(OBJEXT) listen.$(OBJEXT) main.$(OBJEXT) \
 	queue.$(OBJEXT) recursive.$(OBJEXT) reply.$(OBJEXT) \
 	resolve.$(OBJEXT) rr.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	task.$(OBJEXT) tcp.$(OBJEXT) udp.$(OBJEXT) update.$(OBJEXT)
+	task.$(OBJEXT) tcp.$(OBJEXT) udp.$(OBJEXT) update.$(OBJEXT) \
+	tsig.$(OBJEXT)
 mydns_OBJECTS = $(am_mydns_OBJECTS)
 mydns_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -228,11 +229,11 @@ localedir = $(datadir)/locale
 INCLUDES = @UTILINCLUDE@ @MYDNSINCLUDE@ @INTLINCLUDE@ @SQLINCLUDE@ @SSLINCLUDE@
 LDADD = @LIBMYDNS@ @LIBUTIL@ @LIBINTL@ @LIBSQL@ @LIBSSL@ @LIBSOCKET@ @LIBNSL@ @LIBM@
 mydns_DEPENDENCIES = @LIBMYDNS@ @LIBUTIL@
-noinst_HEADERS = cache.h named.h task.h
+noinst_HEADERS = cache.h named.h task.h update.h tsig.h
 mydns_SOURCES = alias.c axfr.c cache.c conf.c data.c db.c encode.c \
 						error.c listen.c main.c queue.c recursive.c \
 						reply.c resolve.c rr.c sort.c status.c task.c \
-						tcp.c udp.c update.c
+						tcp.c udp.c update.c tsig.c
 
 CLEANFILES = malloc_trace gmon.out bb.out
 all: all-am
@@ -325,6 +326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/task.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/udp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update.Po@am__quote@
 

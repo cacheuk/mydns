@@ -346,15 +346,15 @@ typedef struct _conflist
 	char	*altname;	/* Alternate name for this option */
 	int	defaulted;	/* This variable was defaulted; not actually in config file */
 	struct _conflist *next;
-} CONF;
+} CONFIG;
 
 #define	CONF_FS_CHAR	'\034'
 #define	CONF_FS_STR		"\034"
 
-extern void	conf_clobber(CONF **, char *, char *);
-extern void	conf_set(CONF **, char *, char *, int);
-extern char	*conf_get(CONF **, char *, int *);
-extern void	conf_load(CONF **, const char *);
+extern void	conf_clobber(CONFIG **, char *, char *);
+extern void	conf_set(CONFIG **, char *, char *, int);
+extern char	*conf_get(CONFIG **, char *, int *);
+extern void	conf_load(CONFIG **, const char *);
 
 #define	Free(P)	if ((P)) free((P)), (P) = NULL
 
@@ -374,6 +374,7 @@ extern FILE	*err_file;											/* Output to this file */
 extern void error_init(const char *argv0, int facility);
 #if DEBUG_ENABLED
 extern void Debug(const char *, ...) __printflike(1,2);
+extern unsigned char *hex(char *, int);
 #endif
 extern void Verbose(const char *, ...) __printflike(1,2);
 extern void Notice(const char *, ...) __printflike(1,2);

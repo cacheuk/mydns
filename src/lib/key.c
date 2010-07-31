@@ -1,5 +1,5 @@
 /**************************************************************************************************
-	$Id: util.h,v 1.14 2005/04/20 16:49:12 bboy Exp $
+	$Id: rr.c,v 1.65 2005/04/29 16:10:27 bboy Exp $
 
 	Copyright (C) 2002-2005  Don Moore <bboy@bboy.net>
 
@@ -18,24 +18,6 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 **************************************************************************************************/
 
-#ifndef _MYDNS_UTIL_DIR_H
-#define _MYDNS_UTIL_DIR_H
-
-#include "mydnsutil.h"
 #include "mydns.h"
 
-/* I'm not done with tinydns-data support yet.  It won't work.
-	Defining this and recompiling will NOT let you import tinydns-data files! */
-#define TINYDNS_IMPORT
-
-extern CONFIG *Conf;												/* Configuration data */
-
-extern void load_config(void);
-extern void db_connect(void);
-extern uint32_t sqlnum(const char *, ...) __printflike(1,2);
-extern inline void meter(unsigned long, unsigned long);
-
-
-#endif /* !_MYDNS_UTIL_DIR_H */
-
-/* vi:set ts=3: */
+char mydns_key_table_name[PATH_MAX] = MYDNS_KEY_TABLE;

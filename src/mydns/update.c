@@ -26,51 +26,6 @@
 
 #define	DEBUG_UPDATE_SQL	0
 
-
-typedef struct _update_query_rr
-{
-	char				name[DNS_MAXNAMELEN];
-	dns_qtype_t		type;
-	dns_class_t		class;
-	uint32_t			ttl;
-	uint16_t			rdlength;
-	unsigned char	rdata[DNS_MAXPACKETLEN_UDP + 1];
-} UQRR;
-
-
-/* This is the temporary RRset described in RFC 2136, 3.2.3 */
-typedef struct _update_temp_rrset
-{
-	char			name[DNS_MAXNAMELEN];
-	dns_qtype_t	type;
-	char			data[DNS_MAXPACKETLEN_UDP + 1];
-	uint32_t		aux;
-
-	int			checked;											/* Have we checked this unique name/type? */
-} TMPRR;
-
-
-typedef struct _update_query
-{
-	/* Zone section */
-	char			name[DNS_MAXNAMELEN];						/* The zone name */
-	dns_qtype_t	type;												/* Must be DNS_QTYPE_SOA */
-	dns_class_t	class;											/* The zone's class */
-
-	UQRR			*PR;												/* Prerequisite section RRs */
-	int			numPR;											/* Number of items in 'PR' */
-
-	UQRR			*UP;												/* Update section RRs */
-	int			numUP;											/* Number of items in 'UP' */
-
-	UQRR			*AD;												/* Additional data section RRs */
-	int			numAD;											/* Number of items in 'AD' */
-
-	TMPRR			**tmprr;											/* Temporary RR list for prerequisite */
-	int			num_tmprr;										/* Number of items in "tmprr" */
-} UQ;
-
-
 /**************************************************************************************************
 	FREE_UQ
 	Frees a 'UQ' structure.
@@ -182,7 +137,7 @@ check_update(TASK *t, MYDNS_SOA *soa)
 /*--- check_update() ----------------------------------------------------------------------------*/
 
 
-#if DEBUG_ENABLED && DEBUG_UPDATE
+#if DEBUG_ENABLED
 /**************************************************************************************************
 	UPDATE_RRDUMP
 **************************************************************************************************/
@@ -218,11 +173,14 @@ update_gobble_rr(TASK *t, MYDNS_SOA *soa, char *query, size_t querylen, char *cu
 {
 	char *src = current;
 
+   rr->name_ptr = current;
+   
 	if (!(src = name_unencode(query, querylen, src, rr->name, sizeof(rr->name))))
 	{
 		formerr(t, DNS_RCODE_FORMERR, (task_error_t)rr->name[0], NULL);
 		return NULL;
 	}
+   rr->name_size = src - current;
 
 	DNS_GET16(rr->type, src);
 	DNS_GET16(rr->class, src);
@@ -257,6 +215,8 @@ parse_update_query(TASK *t, MYDNS_SOA *soa, UQ *q)
 	*/
 	if (!(src = name_unencode(query, querylen, src, q->name, sizeof(q->name))))
 		return formerr(t, DNS_RCODE_FORMERR, (task_error_t)q->name[0], NULL);
+
+   q->name_size = src - query - DNS_HEADERSIZE;
 	DNS_GET16(q->type, src);
 	DNS_GET16(q->class, src);
 #if DEBUG_ENABLED && DEBUG_UPDATE
@@ -766,6 +726,161 @@ check_prerequisite(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 	return 0;
 }
 /*--- check_prerequisite() ----------------------------------------------------------------------*/
+
+
+
+
+
+
+#ifdef WITH_SSL
+/**************************************************************************************************
+	CHECK_TSIG
+	Check the Secret Key Transaction Authentication (TSIG) as described in RFC 2845.
+	Returns 0 on success, -1 on error.
+**************************************************************************************************/
+static int
+check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
+{
+	 unsigned char data_[DNS_MAXPACKETLEN_UDP];
+    unsigned char *data = data_;
+    unsigned char *key_decoded;
+    const EVP_MD *md5;                                /* MD5 engine */
+    char	*query = t->query;									/* Query section */
+    char	*start = query;							   		/* Start of query section */
+    int	querylen = t->len;									/* Length of 'query' */
+    HMAC_CTX ctx;                                     /* HMAC Context */
+    unsigned char md[EVP_MAX_MD_SIZE];                /* Digest */
+    int mdlen;                                        /* Digest len */
+    TSIG   tsig;                                      /* Transaction signature */
+    time_t  now;                                      /* Current time */
+
+    int  l, sum = 0;
+    
+    /* Detach transaction signature from the message */
+    detach_tsig(t->query, t->len, rr, &tsig);
+
+    t->originalid = tsig.originalid; 
+    t->query_mac = tsig.mac;
+    t->query_maclen = tsig.macsize;
+
+    t->tsig_error = DNS_RCODE_NOERROR;
+    
+
+#if DEBUG_ENABLED && DEBUG_UPDATE
+    tsig_dump(desctask(t), &tsig);
+#endif
+
+    /* Fetch key */
+    if (!(t->key = tsig_find_key(desctask(t), rr->name))) {
+#if DEBUG_ENABLED && DEBUG_UPDATE
+		  Debug("%s: DNS UPDATE: key not found", desctask(t));
+#endif
+        t->tsig_error = DNS_RCODE_BADKEY;
+        return dnserror(t, DNS_RCODE_NOTAUTH, ERR_TSIG_KEY_NOT_FOUND); 
+    }
+
+    /* Check key size */
+    if ((l = strlen(t->key->private)) < 10) { /* 10 chars = 8 octets = 64 bits */
+		  Verbose("%s: DNS UPDATE: key [%s] is too short to be secure", desctask(t), t->key->name);
+        t->tsig_error = DNS_RCODE_BADKEY;
+        return dnserror(t, DNS_RCODE_NOTAUTH, ERR_TSIG_KEY_TOO_SHORT); 
+    }
+
+    now = time(NULL);
+
+    *do_sign = 1; 
+
+    /* Check time */
+    if (now > tsig.timesigned + tsig.fudge) {
+        Verbose("%s: DNS UPDATE: signature has expired", desctask(t));
+        t->tsig_error = DNS_RCODE_BADTIME;
+        return dnserror(t, DNS_RCODE_NOTAUTH, ERR_TSIG_CLOCKSKEW); 
+    } else if (now  < tsig.timesigned - tsig.fudge) {
+        Verbose("%s: DNS UPDATE: signature is in the future", desctask(t));
+        return dnserror(t, DNS_RCODE_NOTAUTH, ERR_TSIG_CLOCKSKEW); 
+    }
+
+    /* Decode */
+    t->tsig_key = base64_decode(t->key->private, l);
+    t->tsig_keylen = (l * 3) / 4;
+    
+    md5 = EVP_md5();
+    HMAC_Init(&ctx, t->tsig_key, t->tsig_keylen, md5);
+
+
+    /* Digest Header */
+    HMAC_Update(&ctx, start, DNS_HEADERSIZE);
+
+    /* Compute message size without the TSIG record */
+    sum += q->name_size;
+    sum += SIZE16 * 2; /* Type and class */
+    for (l = 0; l < q->numPR; l++) {
+        sum += (&q->PR[l])->size;
+    }
+
+    for (l = 0; l < q->numUP; l++) {
+        sum += (&q->UP[l])->size;
+    }
+
+    for (l = 0; l < (q->numAD - 1); l++) { 
+        sum += (&q->AD[l])->size;
+    }
+
+    /* Digest message (all non-TSIG records) */
+    HMAC_Update(&ctx, query + DNS_HEADERSIZE, sum); 
+    
+    /* Digest the key name */
+    t->tsig_keynamelen = name_encode(t, t->tsig_keyname, rr->name, 0, 0);
+    HMAC_Update(&ctx, t->tsig_keyname, t->tsig_keynamelen); 
+
+    /* Digest class + ttl */
+    DNS_PUT16(data, rr->class);
+    DNS_PUT32(data, rr->ttl);
+    data = data_;
+
+    HMAC_Update(&ctx, data, SIZE16 + SIZE32); 
+    
+    /* Digest the key algorithm */ 
+    HMAC_Update(&ctx, tsig.algorithm_value, tsig.algorithm_size); 
+
+    /* Digest timesigned and fudge */
+    DNS_PUT48(data, tsig.timesigned);
+    DNS_PUT16(data, tsig.fudge);
+    data = data_;
+    HMAC_Update(&ctx, data, SIZE48 + SIZE16); 
+
+    /* Digest error and otherlen */
+    DNS_PUT16(data, tsig.error);
+    DNS_PUT16(data, tsig.otherlen);
+    data = data_;
+    HMAC_Update(&ctx, data, SIZE16 + SIZE16); 
+
+
+#if DEBUG_ENABLED && DEBUG_UPDATE
+    Debug("%s: TSIG CHECK: sizes query [%d] message [%d] signature [%d]", desctask(t), querylen, sum, querylen - sum);
+#endif
+
+    HMAC_Final(&ctx, md, &mdlen);
+
+#if DEBUG_ENABLED && DEBUG_UPDATE
+    Debug("%s: TSIG CHECK: digest [%s] size [%d]", desctask(t), hex(md, mdlen), mdlen);
+#endif
+
+    if (memcmp(md, tsig.mac, mdlen) != 0) {
+        Verbose("%s: TSIG CHECK: signature failed to verify", desctask(t));
+        t->tsig_error = DNS_RCODE_BADSIG;
+        return dnserror(t, DNS_RCODE_NOTAUTH, ERR_TSIG_BADSIGN); 
+    }
+
+#if DEBUG_ENABLED && DEBUG_UPDATE
+    Debug("%s: TSIG CHECK: signature verified !", desctask(t));
+#endif
+
+    HMAC_CTX_cleanup(&ctx);
+    return 0;
+}
+
+#endif /* WITH_SSL */
 
 
 /**************************************************************************************************
@@ -1408,6 +1523,7 @@ dns_update(TASK *t)
 {
 	MYDNS_SOA	*soa;												/* SOA record for zone */
 	UQ				*q;												/* Update query data */
+   int         sign_reply = 0;                        /* Sign replay? */
 	int			n;
 
 	/* Try to load SOA for zone */
@@ -1450,6 +1566,24 @@ dns_update(TASK *t)
 #endif
 			goto dns_update_error;
 		}
+
+#ifdef WITH_SSL
+	/* Check the additional section */
+	for (n = 0; n < q->numAD; n++) {
+       if ( DNS_QTYPE_TSIG == (&q->AD[n])->type ) {
+           /* Check if the TSIG record is the last record -- RFC 2845 3.2 */
+           if (n != (q->numAD - 1)) {
+#if DEBUG_ENABLED && DEBUG_UPDATE
+                Debug("TSIG record is not the last record in the additional section");
+#endif
+                goto dns_update_error;
+           }
+           if (check_tsig(t, soa, q, &q->AD[n], &sign_reply) != 0) {
+                goto dns_update_error;
+           }
+       }
+   }
+#endif /* WITH_SSL */
 
 	/* Check the prerequisite RRsets -- RFC 2136 3.2.3 */
 	if (check_tmprr(t, soa, q) != 0)
@@ -1499,7 +1633,7 @@ dns_update(TASK *t)
 	cache_purge_zone(ReplyCache, soa->id);
 
 	/* Construct reply and set task status */
-	build_reply(t, 0);
+	build_reply(t, 0, sign_reply);
 	t->status = NEED_WRITE;
 
 	/* Clean up and return */
@@ -1508,7 +1642,7 @@ dns_update(TASK *t)
 	return 0;
 
 dns_update_error:
-	build_reply(t, 1);
+	build_reply(t, 1, sign_reply);
 #if DEBUG_ENABLED && DEBUG_UPDATE
 	Debug("%s: DNS UPDATE: Went to dns_update_error", desctask(t));
 #endif

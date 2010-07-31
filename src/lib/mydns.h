@@ -30,14 +30,17 @@
 /* Table names */
 #define	MYDNS_SOA_TABLE	"soa"
 #define	MYDNS_RR_TABLE		"rr"
+#define	MYDNS_KEY_TABLE	"dnskey"
 
 /* Configurable table names */
 extern char mydns_soa_table_name[PATH_MAX];
 extern char mydns_rr_table_name[PATH_MAX];
+extern char mydns_key_table_name[PATH_MAX];
 
 /* Configurable WHERE clauses */
 extern char *mydns_soa_where_clause;
 extern char *mydns_rr_where_clause;
+extern char *mydns_key_where_clause;
 
 /* If this is nonzero, an 'active' field is assumed to exist in the table, and
 	only active rows will be loaded by mydns_*_load() */
@@ -57,6 +60,14 @@ extern int mydns_soa_use_xfer;
 extern int mydns_soa_use_update_acl;
 #define mydns_set_soa_use_update_acl(S)	\
 				(mydns_soa_use_update_acl = sql_iscolumn((S), mydns_soa_table_name, "update_acl"))
+
+#ifdef WITH_SSL
+/* This is set by mydns_set_soa_use_update_key */
+extern int mydns_soa_use_update_key;
+#define mydns_set_soa_use_update_key(S)	\
+				(mydns_soa_use_update_key = sql_iscolumn((S), mydns_soa_table_name, "update_key"))
+
+#endif /* WITH_SSL */
 
 
 /* This is set by mydns_set_rr_use_stamp (currently unimplemented - for future IXFR support */
@@ -78,6 +89,13 @@ extern int mydns_rr_use_stamp;
 #	define	MYDNS_RR_FIELDS	"rr_id,zone_id,name,data,pref,7200,type"
 #else
 #	define	MYDNS_RR_FIELDS	"id,zone,name,data,aux,ttl,type"
+#endif
+
+#define	MYDNS_KEY_NUMFIELDS	7
+#ifdef DN_COLUMN_NAMES
+#	define	MYDNS_KEY_FIELDS	"key_id,name,algorithm,size,type,key,private"
+#else
+#	define	MYDNS_KEY_FIELDS	"id,name,algorithm,size,type,key,private"
 #endif
 
 /* Does the specified string end with a dot? */
@@ -146,6 +164,10 @@ typedef enum _task_error_t					/* Common errors */
 	ERR_FWD_RECURSIVE,						/* "Recursive query forwarding error" */
 	ERR_NO_UPDATE,								/* "UPDATE denied" */
 	ERR_PREREQUISITE_FAILED,				/* "UPDATE prerequisite failed" */
+   ERR_TSIG_KEY_NOT_FOUND,             /* "TSIG" Key not found */
+   ERR_TSIG_KEY_TOO_SHORT,             /* "TSIG" Key is too short */
+   ERR_TSIG_CLOCKSKEW,                 /* "TSIG" ClockSkew */
+   ERR_TSIG_BADSIGN,                   /* "TSIG" Bad sign */
 
 } task_error_t;
 

@@ -286,6 +286,10 @@ _task_init(
 	new->minimum_ttl = DNS_MINIMUM_TTL;
 	new->reply_cache_ok = 1;
 
+#if WITH_SSL
+   new->key = NULL;
+#endif
+
 #if DEBUG_ENABLED && DEBUG_TASK
 	Debug("%s: task_init(%p) from %s:%d", desctask(new), new, file, line);
 #endif
@@ -327,6 +331,18 @@ _task_free(TASK *t, const char *file, int line)
 			Free(t->Names);
 		Free(t->Offsets);
 	}
+#endif
+
+#if WITH_SSL
+   if (t->key) {
+       Free(t->key);
+   }
+   if (t->tsig_key) {
+       Free(t->tsig_key);
+   }
+   if (t->query_mac) {
+        Free(t->query_mac);
+   }
 #endif
 
 	Free(t->query);
@@ -509,7 +525,7 @@ task_process(register TASK *t)
 
 			if (t->status < NEED_RECURSIVE_FWD_CONNECT)
 			{
-				build_reply(t, 1);
+				build_reply(t, 1, 0);
 				if (t->reply_cache_ok)
 					add_reply_to_cache(t);
 				t->status = NEED_WRITE;

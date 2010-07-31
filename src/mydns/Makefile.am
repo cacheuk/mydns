@@ -12,11 +12,11 @@ LDADD				=	@LIBMYDNS@ @LIBUTIL@ @LIBINTL@ @LIBSQL@ @LIBSSL@ @LIBSOCKET@ @LIBNSL@
 
 mydns_DEPENDENCIES	=	@LIBMYDNS@ @LIBUTIL@
 
-noinst_HEADERS	=	cache.h named.h task.h
+noinst_HEADERS	=	cache.h named.h task.h update.h tsig.h
 mydns_SOURCES	=	alias.c axfr.c cache.c conf.c data.c db.c encode.c \
 						error.c listen.c main.c queue.c recursive.c \
 						reply.c resolve.c rr.c sort.c status.c task.c \
-						tcp.c udp.c update.c
+						tcp.c udp.c update.c tsig.c
 
 CLEANFILES		=	malloc_trace gmon.out bb.out
 

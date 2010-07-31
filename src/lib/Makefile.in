@@ -62,7 +62,8 @@ ARFLAGS = cru
 libmydns_a_AR = $(AR) $(ARFLAGS)
 libmydns_a_LIBADD =
 am_libmydns_a_OBJECTS = ip.$(OBJEXT) question.$(OBJEXT) rr.$(OBJEXT) \
-	soa.$(OBJEXT) sql.$(OBJEXT) str.$(OBJEXT) unencode.$(OBJEXT)
+	soa.$(OBJEXT) sql.$(OBJEXT) str.$(OBJEXT) unencode.$(OBJEXT) \
+	key.$(OBJEXT)
 libmydns_a_OBJECTS = $(am_libmydns_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -223,7 +224,7 @@ target_alias = @target_alias@
 noinst_LIBRARIES = libmydns.a
 INCLUDES = @INTLINCLUDE@ @UTILINCLUDE@ @SQLINCLUDE@
 noinst_HEADERS = bits.h header.h mydns.h
-libmydns_a_SOURCES = ip.c question.c rr.c soa.c sql.c str.c unencode.c
+libmydns_a_SOURCES = ip.c question.c rr.c soa.c sql.c str.c unencode.c key.c
 all: all-am
 
 .SUFFIXES:
@@ -272,6 +273,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ip.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/key.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/question.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/soa.Po@am__quote@
