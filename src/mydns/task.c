@@ -140,8 +140,8 @@ new_task(TASK *t, unsigned char *data, size_t len)
 		t->ednslen=opc;
 		printf("   ext rcode: %02x\n",*adp++);
 		printf("edns version: %02x\n",*adp);
-		t->endsversion=*adp++;
-		if(t->endsversion>0)
+		t->ednsversion=*adp++;
+		if(t->ednsversion>0)
 			return formerr(t, DNS_RCODE_BADVERS, ERR_EDNS_UNSUPPORTED_VERSION, _("unsupported EDNS version requested"));
 
 		printf("           Z: %02x\n",*adp++);
