@@ -607,6 +607,49 @@ reply_add_txt(TASK *t, RR *r)
 
 
 /**************************************************************************************************
+	REPLY_ADD_SPF
+	Adds a SPF record to the reply.
+	Returns the numeric offset of the start of this record within the reply, or -1 on error.
+**************************************************************************************************/
+static inline int
+reply_add_spf(TASK *t, RR *r)
+{
+	char		*dest,*src;
+	uint16_t	size,numstrs,copylen;
+	size_t	len;
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN SPF", desctask(t), r->name);
+#endif
+	len = strlen(rr->data);
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_SPF, rr->ttl, "SPF") < 0)
+		return (-1);
+
+	src = rr->data;
+	numstrs = (len/255)+1;
+	size = len + numstrs;
+	r->length += SIZE16 + size;
+
+	if (!(dest = rdata_enlarge(t, SIZE16 + size)))
+		return dnserror(t, DNS_RCODE_SERVFAIL, ERR_INTERNAL);
+
+	DNS_PUT16(dest, size);
+	while(numstrs--){
+		if(len > 255) copylen = 255; else copylen = len;
+
+		*dest++ = copylen;
+		DNS_PUT(dest, src, copylen);
+		src += copylen;
+		len -= copylen;
+	}
+	return (0);
+}
+/*--- reply_add_spf() ---------------------------------------------------------------------------*/
+
+
+/**************************************************************************************************
 	REPLY_ADD_SIGNATURE
 	Add TSIG signaure
 **************************************************************************************************/
@@ -810,6 +853,11 @@ reply_process_rrlist(TASK *t, RRLIST *rrlist)
 
 						case DNS_QTYPE_RP:
 							if (reply_add_rp(t, r) < 0)
+								return (-1);
+							break;
+
+						case DNS_QTYPE_SPF:
+							if (reply_add_spf(t, r) < 0)
 								return (-1);
 							break;
 

@@ -136,6 +136,8 @@ mydns_rr_get_type(char *type)
 			break;
 
 		case 'S':
+			if (type[1] == 'P' && type[2] == 'F' && !type[3])
+				return DNS_QTYPE_SPF;
 			if (type[1] == 'R' && type[2] == 'V' && !type[3])
 				return DNS_QTYPE_SRV;
 			break;
@@ -479,6 +481,7 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 		case DNS_QTYPE_NS:		wheretype = " AND type='NS'"; break;
 		case DNS_QTYPE_PTR:		wheretype = " AND type='PTR'"; break;
 		case DNS_QTYPE_SOA:		wheretype = " AND type='SOA'"; break;
+		case DNS_QTYPE_SPF:		wheretype = " AND type='SPF'"; break;
 		case DNS_QTYPE_SRV:		wheretype = " AND type='SRV'"; break;
 		case DNS_QTYPE_TXT:		wheretype = " AND type='TXT'"; break;
 		case DNS_QTYPE_ANY:		wheretype = ""; break;

@@ -237,6 +237,7 @@ typedef enum									/* Query types */
 	DNS_QTYPE_RRSIG		= 46,				/* DNSSEC */
 	DNS_QTYPE_NSEC			= 47,				/* DNSSEC */
 	DNS_QTYPE_DNSKEY		= 48,				/* DNSSEC */
+	DNS_QTYPE_SPF			= 99,				/* SPF */
 	DNS_QTYPE_TSIG			= 250,			/* Transaction signature */
 	DNS_QTYPE_IXFR			= 251,			/* Incremental zone transfer */
 	DNS_QTYPE_AXFR			= 252,			/* Zone transfer */

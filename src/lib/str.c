@@ -99,6 +99,11 @@ mydns_qtype_str(dns_qtype_t qtype)
 		case DNS_QTYPE_DNAME:		return ("DNAME");
 		case DNS_QTYPE_SINK:			return ("SINK");
 		case DNS_QTYPE_OPT:			return ("OPT");
+		case DNS_QTYPE_DS	:			return ("DS");
+		case DNS_QTYPE_RRSIG:		return ("RRSIG");
+		case DNS_QTYPE_NSEC:			return ("NSEC");
+		case DNS_QTYPE_DNSKEY:		return ("DNSKEY");
+		case DNS_QTYPE_SPF:			return ("SPF");
 		case DNS_QTYPE_TSIG:			return ("TSIG");
 		case DNS_QTYPE_IXFR:			return ("IXFR");
 		case DNS_QTYPE_AXFR:			return ("AXFR");
