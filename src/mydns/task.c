@@ -125,6 +125,29 @@ new_task(TASK *t, unsigned char *data, size_t len)
 	DNS_GET16(t->qclass, src);
 
 	t->qdlen = src - qdtop;
+	if(t->arcount){
+		t->adlen = len - DNS_HEADERSIZE - t->qdlen;							/* Fill in additional data */
+		t->ad=t->qd+t->qdlen;
+		uchar *adp;
+		uint16_t opc;
+		adp=t->ad+1;
+		printf("t->qdlen: %d\nt->adlen: %d\n",t->qdlen,t->adlen);
+		printf("       label: %02x\n",*t->ad);
+		DNS_GET16(opc,adp);
+		printf("       qtype: %d\n",opc);
+		DNS_GET16(opc,adp);
+		printf("    udp size: %d\n",opc);
+		t->ednslen=opc;
+		printf("   ext rcode: %02x\n",*adp++);
+		printf("edns version: %02x\n",*adp);
+		t->endsversion=*adp++;
+		if(t->endsversion>0)
+			return formerr(t, DNS_RCODE_BADVERS, ERR_EDNS_UNSUPPORTED_VERSION, _("unsupported EDNS version requested"));
+
+		printf("           Z: %02x\n",*adp++);
+		DNS_GET16(opc,adp);
+		printf(" data length: %d\n",opc);
+	}
 
 	/* Request must have at least one question */
 	if (!t->qdcount)

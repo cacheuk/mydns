@@ -883,7 +883,7 @@ truncate_rrlist(TASK *t, off_t maxpkt, RRLIST *rrlist, datasection_t ds)
 static void
 reply_check_truncation(TASK *t, int *ancount, int *nscount, int *arcount)
 {
-	size_t maxpkt = (t->protocol == SOCK_STREAM ? DNS_MAXPACKETLEN_TCP : DNS_MAXPACKETLEN_UDP);
+	size_t maxpkt = (t->protocol == SOCK_STREAM ? DNS_MAXPACKETLEN_TCP : (t->ednslen ? t->ednslen-11 : DNS_MAXPACKETLEN_UDP));
 	size_t maxrd = maxpkt - (DNS_HEADERSIZE + t->qdlen);
 
 	if (t->rdlen <= maxrd)
@@ -971,8 +971,13 @@ build_reply(TASK *t, int want_additional, int sign)
 	t->hdr.qr = 1;
 	t->hdr.cd = 0;
 
+
 	/* Construct the reply */
 	t->replylen = DNS_HEADERSIZE + t->qdlen + t->rdlen;
+	if(t->ednslen){
+		arcount++;
+		t->replylen+=11;
+	}
 	dest = t->reply = malloc(t->replylen);
 	if (!t->reply)
 		Err(_("out of memory"));
@@ -986,6 +991,11 @@ build_reply(TASK *t, int want_additional, int sign)
 	if (t->qdlen && t->qd)
 		DNS_PUT(dest, t->qd, t->qdlen);						/* Data for QUESTION section */
 	DNS_PUT(dest, t->rdata, t->rdlen);						/* Resource record data */
+
+	if(t->ednslen){
+		uchar edns[]={0x00,0x00,0x29,0x10,0x00 ,0x00,0x00,0x00,0x00,0x00,0x00};
+		DNS_PUT(dest, edns, 11);
+	}
 
    if (sign) {
         t->reply = reply_add_signature(t, t->reply);

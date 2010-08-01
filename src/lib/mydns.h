@@ -164,6 +164,7 @@ typedef enum _task_error_t					/* Common errors */
 	ERR_FWD_RECURSIVE,						/* "Recursive query forwarding error" */
 	ERR_NO_UPDATE,								/* "UPDATE denied" */
 	ERR_PREREQUISITE_FAILED,				/* "UPDATE prerequisite failed" */
+   ERR_EDNS_UNSUPPORTED_VERSION,       /* "EDNS" Unsupported version */
    ERR_TSIG_KEY_NOT_FOUND,             /* "TSIG" Key not found */
    ERR_TSIG_KEY_TOO_SHORT,             /* "TSIG" Key is too short */
    ERR_TSIG_CLOCKSKEW,                 /* "TSIG" ClockSkew */
@@ -279,8 +280,7 @@ typedef enum
 
 	/* Codes that can't fit in 4 bits are found in OPT (RFC 2671), TSIG (RFC 2845), and
 		TKEY (RFC 2930) RRs */ 
-	/* RFC 2671 says that rcode 16 is BADVERS ("Bad OPT version").  This conlicts with
-		RFC 2845.  RFC 2845 seems like best current practice. */
+	DNS_RCODE_BADVERS		= 16,				/* Unsupported EDNS version (RFC 2671) */
 	DNS_RCODE_BADSIG		= 16,				/* TSIG signature failure (RFC 2845) */
 	DNS_RCODE_BADKEY		= 17,				/* Key not recognized (RFC 2845) */
 	DNS_RCODE_BADTIME		= 18,				/* Signature out of time window (RFC 2845) */

@@ -101,6 +101,7 @@ _formerr_internal(
 )
 {
 	char	*dest;
+	uint16_t arcount;
 
 #if DEBUG_ENABLED && DEBUG_ERROR
 	Debug("%s: formerr(): %s %s from %s:%u: %s",
@@ -114,6 +115,8 @@ _formerr_internal(
 
 	/* Build simple reply to avoid problems with malformed data */
 	t->replylen = DNS_HEADERSIZE;
+	if(rcode==16 && t->ednsversion>0)
+		t->replylen+=11;
 	dest = t->reply = malloc(t->replylen);
 	if (!t->reply)
 		Err(_("out of memory"));
@@ -123,7 +126,16 @@ _formerr_internal(
 	DNS_PUT16(dest, 0);											/* QUESTION count */
 	DNS_PUT16(dest, 0);											/* ANSWER count */
 	DNS_PUT16(dest, 0);											/* AUTHORITY count */
-	DNS_PUT16(dest, 0);											/* ADDITIONAL count */
+	if(rcode==16 && t->ednsversion>0)
+		arcount=1;
+	else
+		arcount=0;
+	DNS_PUT16(dest, arcount);											/* ADDITIONAL count */
+
+	if(rcode==16 && t->ednsversion>0){
+		uchar edns[]={0x00,0x00,0x29,0x10,0x00 ,rcode>>4,0x00,0x00,0x00,0x00,0x00};
+		DNS_PUT(dest, edns, 11);
+	}
 
 	return (-1);
 }

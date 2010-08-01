@@ -110,11 +110,16 @@ typedef struct _named_task
 	uint32_t			Cnames[MAX_CNAME_LEVEL];				/* Array of CNAMEs found */
 
 	unsigned char	*qd;											/* Question section data */
+	unsigned char	*ad;											/* Additional section data */
 	size_t			qdlen;										/* Size of question section */
+	size_t			adlen;										/* Size of additional section */
 	uint16_t			qdcount;										/* "qdcount", from header */
 	uint16_t			ancount;										/* "ancount", from header */
 	uint16_t			nscount;										/* "nscount", from header */
 	uint16_t			arcount;										/* "arcount", from header */
+
+	uint16_t			ednslen;										/* EDNS upd size from request */
+	uchar				ednsversion;								/* EDNS version from request */
 
 	int				no_markers;									/* Do not use markers? */
    
