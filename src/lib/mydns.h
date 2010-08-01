@@ -233,6 +233,10 @@ typedef enum									/* Query types */
 	DNS_QTYPE_DNAME		= 39,				/* Non-terminal DNAME (for IPv6) */
 	DNS_QTYPE_SINK			= 40,				/* Kitchen sink (experimentatl) */
 	DNS_QTYPE_OPT			= 41,				/* EDNS0 option (meta-RR) */
+	DNS_QTYPE_DS			= 43,				/* DNSSEC */
+	DNS_QTYPE_RRSIG		= 46,				/* DNSSEC */
+	DNS_QTYPE_NSEC			= 47,				/* DNSSEC */
+	DNS_QTYPE_DNSKEY		= 48,				/* DNSSEC */
 	DNS_QTYPE_TSIG			= 250,			/* Transaction signature */
 	DNS_QTYPE_IXFR			= 251,			/* Incremental zone transfer */
 	DNS_QTYPE_AXFR			= 252,			/* Zone transfer */
