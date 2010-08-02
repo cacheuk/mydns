@@ -36,11 +36,11 @@ typedef struct _tansaction_signature
    uint64_t    timesigned;
    uint16_t    fudge;
    uint16_t    macsize;
-	char			*mac;
+   unsigned char			*mac;
    uint16_t    originalid;
    uint16_t    error;
    uint16_t    otherlen;
-	char			*other;
+   unsigned char			*other;
 } TSIG;
 
 typedef struct _key 
@@ -53,9 +53,9 @@ typedef struct _key
 } KEY;
 
 extern unsigned char *base64_decode(unsigned char *, unsigned int);
-extern void tsig_dump(unsigned char *, TSIG *);
-extern void detach_tsig(unsigned char *, int, UQRR *, TSIG *);
-extern KEY *tsig_find_key(unsigned char *, unsigned char *);
+extern void tsig_dump(char *, TSIG *);
+extern void detach_tsig(char *, int, UQRR *, TSIG *);
+extern KEY *tsig_find_key(char *, char *);
 
 #endif /* !_MYDNS_TSIG_H */
 /* vi:set ts=3: */

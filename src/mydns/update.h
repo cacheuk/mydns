@@ -30,7 +30,7 @@ typedef struct _update_query_rr
 	dns_class_t		class;
 	uint32_t			ttl;
 	uint16_t			rdlength;
-	unsigned char	rdata[DNS_MAXPACKETLEN_UDP + 1];
+	char	rdata[DNS_MAXPACKETLEN_UDP + 1];
    unsigned int   size;
 } UQRR;
 

@@ -144,7 +144,8 @@ int
 recursive_fwd_read(TASK *t)
 {
 	char	reply[DNS_MAXPACKETLEN_UDP + 2], *r;
-	int	replylen, addrlen = sizeof(struct sockaddr_in);
+	int	replylen;
+	socklen_t addrlen = sizeof(struct sockaddr_in);
 	uint16_t id, qdcount, ancount, nscount, arcount;
 	DNS_HEADER hdr;
 

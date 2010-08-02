@@ -290,7 +290,7 @@ get_zone_ids(void)
 		else	/* Insert new record */
 		{
 			long	id;
-			uchar	query[DNS_QUERYBUFSIZ];
+			char	query[DNS_QUERYBUFSIZ];
 			int	querylen;
 			char	esc_origin[DNS_MAXNAMELEN + DNS_MAXNAMELEN + 1];
 			char	esc_ns[520], esc_mbox[520];

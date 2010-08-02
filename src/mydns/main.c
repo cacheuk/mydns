@@ -322,7 +322,9 @@ create_pidfile(void)
 	fclose(fp);
 
 	/* Change ownership so we can delete it later */
-	chown(name, perms_uid, perms_gid);
+	if(chown(name, perms_uid, perms_gid)<0)
+		Err("%s %s", "chown pidfile, ",name);
+
 }
 /*--- create_pidfile() --------------------------------------------------------------------------*/
 
@@ -739,7 +741,9 @@ main(int argc, char **argv)
 	if (run_as_root)
 	{
 		init_rlimits();
-		chdir("/tmp");
+		if(chdir("/tmp")<0)
+			Err("chdir /tmp failed");
+
 		Notice("%s", _("WARNING: running with superuser permissions (cwd=/tmp)"));
 	}
 	if (!run_as_root)

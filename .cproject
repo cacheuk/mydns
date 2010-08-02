@@ -26,6 +26,9 @@
 </tool>
 <tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.autogen.243180445" name="autogen.sh" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.autogen"/>
 <tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc.1859141364" name="GCC C Compiler" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc">
+<option id="gnu.c.compiler.option.include.paths.240992690" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/usr/include/openssl/"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.652921471" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp.2062955167" name="GCC C++ Compiler" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp"/>

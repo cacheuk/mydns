@@ -209,7 +209,7 @@ extern void		sort_srv_recs(TASK *, RRLIST *, datasection_t);
 
 
 /* task.c */
-extern int		new_task(TASK *, unsigned char *, size_t);
+extern int		new_task(TASK *, char *, size_t);
 extern void		task_init_header(TASK *);
 extern char		*clientaddr(TASK *);
 extern char		*desctask(TASK *);

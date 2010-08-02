@@ -118,7 +118,7 @@ read_tcp_length(TASK *t)
 int
 read_tcp_query(TASK *t)
 {
-	unsigned char *end;
+	char *end;
 	int rv;
 
 	/* Read packet length if we haven't already */

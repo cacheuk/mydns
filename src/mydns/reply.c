@@ -581,7 +581,7 @@ reply_add_txt(TASK *t, RR *r)
 #endif
 	len = strlen(rr->data);
 
-	if (reply_start_rr(t, r, r->name, DNS_QTYPE_TXT, rr->ttl, "TXT") < 0)
+	if (reply_start_rr(t, r, (char *)r->name, DNS_QTYPE_TXT, rr->ttl, "TXT") < 0)
 		return (-1);
 
 	src = rr->data;
@@ -650,135 +650,174 @@ reply_add_spf(TASK *t, RR *r)
 
 
 /**************************************************************************************************
+	REPLY_ADD_SPF
+	Adds a SPF record to the reply.
+	Returns the numeric offset of the start of this record within the reply, or -1 on error.
+**************************************************************************************************/
+static inline int
+reply_add_sshfp(TASK *t, RR *r)
+{
+	char		*dest,*src;
+	uint16_t	size,numstrs,copylen;
+	size_t	len;
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN SSHFP", desctask(t), r->name);
+#endif
+	len = rr->sshfp_size;
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_SSHFP, rr->ttl, "SSHFP") < 0)
+		return (-1);
+
+	src = rr->data;
+
+	if (!(dest = rdata_enlarge(t, len + 4)))
+		return dnserror(t, DNS_RCODE_SERVFAIL, ERR_INTERNAL);
+
+	DNS_PUT16(dest, len + 2);
+	*(dest++)=rr->sshfp_algorithm;
+	*(dest++)=rr->sshfp_type;
+	DNS_PUT(dest, src, len);
+
+	printf("sshfp: sshfp_size=%d  len=%d  rr->sshfp_algorithm=%d  rr->sshfp_type=%d key=%40s\n",rr->sshfp_size,len,rr->sshfp_algorithm,rr->sshfp_type,rr->data);
+
+
+	return (0);
+}
+/*--- reply_add_sshfp() ---------------------------------------------------------------------------*/
+
+
+/**************************************************************************************************
 	REPLY_ADD_SIGNATURE
 	Add TSIG signaure
 **************************************************************************************************/
 static char *
-reply_add_signature(TASK *t, char *reply)
+reply_add_signature(TASK *t, unsigned char *reply)
 {
-	 unsigned char data_[DNS_MAXPACKETLEN_UDP];
-    unsigned char *data = data_;
-    unsigned char *signature;
-    unsigned char *sign;
-    unsigned short val;
-    unsigned char md[EVP_MAX_MD_SIZE];                /* Digest */
-    int mdlen;                                        /* Digest len */
-    const EVP_MD *md5;                                /* MD5 engine */
-    HMAC_CTX ctx;                                     /* HMAC Context */
-    TSIG   tsig;                                      /* Transaction signature */
-    int    headerlen, rdatalen; 
+	unsigned char		data_[DNS_MAXPACKETLEN_UDP];
+	unsigned char		*data = data_;
+	unsigned char		*signature;
+	unsigned char		*sign;
+	unsigned short	val;
+	unsigned char		md[EVP_MAX_MD_SIZE];	/* Digest */
+	unsigned int		mdlen;					/* Digest len */
+	const EVP_MD		*md5;						/* MD5 engine */
+	HMAC_CTX				ctx;						/* HMAC Context */
+	TSIG					tsig;						/* Transaction signature */
+	int					headerlen, rdatalen;
 
-    tsig.timesigned = time(NULL);
-    tsig.fudge = DNS_TSIG_FUDGE;
-    tsig.originalid = t->originalid; 
-    tsig.error = t->tsig_error;
-    tsig.macsize = 0;
-    tsig.mac = NULL;
-    tsig.otherlen = 0;
-    tsig.other = NULL;
+	tsig.timesigned = time(NULL);
+	tsig.fudge = DNS_TSIG_FUDGE;
+	tsig.originalid = t->originalid;
+	tsig.error = t->tsig_error;
+	tsig.macsize = 0;
+	tsig.mac = NULL;
+	tsig.otherlen = 0;
+	tsig.other = NULL;
 
-    md5 = EVP_md5();
-    HMAC_Init(&ctx, t->tsig_key, t->tsig_keylen, md5);
+	md5 = EVP_md5();
+	HMAC_Init(&ctx, t->tsig_key, t->tsig_keylen, md5);
 
-    /* Digest the query signature */
-    DNS_PUT16(data, t->query_maclen);
-    data = data_;
-    HMAC_Update(&ctx, data, SIZE16);
-    
-    HMAC_Update(&ctx, t->query_mac, t->query_maclen);
+	/* Digest the query signature */
+	DNS_PUT16(data, t->query_maclen);
+	data = data_;
+	HMAC_Update(&ctx, data, SIZE16);
 
-    /* Digest the reply */
-    HMAC_Update(&ctx, reply, t->replylen);
+	HMAC_Update(&ctx, t->query_mac, t->query_maclen);
+
+	/* Digest the reply */
+	HMAC_Update(&ctx, reply, t->replylen);
 
 
-    /* Digest the keyname */
-    HMAC_Update(&ctx, t->tsig_keyname, t->tsig_keynamelen);
+	/* Digest the keyname */
+	HMAC_Update(&ctx, (uchar *)t->tsig_keyname, t->tsig_keynamelen);
 
-    /* Digest the TTL + class */
-    DNS_PUT16(data, DNS_QTYPE_ANY);
-    DNS_PUT32(data, 0); 
-    data = data_;
-    HMAC_Update(&ctx, data, SIZE16 + SIZE32); 
+	/* Digest the TTL + class */
+	DNS_PUT16(data, DNS_QTYPE_ANY);
+	DNS_PUT32(data, 0);
+	data = data_;
+	HMAC_Update(&ctx, data, SIZE16 + SIZE32);
 
-    /* Digest algorithm */
-    HMAC_Update(&ctx, HMACMD5_ALGORITHM, HMACMD5_ALGORITHM_LEN); 
+	/* Digest algorithm */
+	HMAC_Update(&ctx, (const uchar *)HMACMD5_ALGORITHM, HMACMD5_ALGORITHM_LEN);
 
-    /* Digest timesigned and fudge */
-    DNS_PUT48(data, tsig.timesigned);
-    DNS_PUT16(data, tsig.fudge); 
-    data = data_;
-    HMAC_Update(&ctx, data, SIZE48 + SIZE16); 
+	/* Digest timesigned and fudge */
+	DNS_PUT48(data, tsig.timesigned);
+	DNS_PUT16(data, tsig.fudge);
+	data = data_;
+	HMAC_Update(&ctx, data, SIZE48 + SIZE16);
 
-    /* Digest error and otherlen */
-    DNS_PUT16(data, tsig.error);
-    DNS_PUT16(data, tsig.otherlen);
-    data = data_;
-    HMAC_Update(&ctx, data, SIZE16 + SIZE16); 
-    
-    if (tsig.otherlen > 0) {
-        HMAC_Update(&ctx, tsig.other, tsig.otherlen); 
-    }
-    
-    HMAC_Final(&ctx, md, &mdlen);
+	/* Digest error and otherlen */
+	DNS_PUT16(data, tsig.error);
+	DNS_PUT16(data, tsig.otherlen);
+	data = data_;
+	HMAC_Update(&ctx, data, SIZE16 + SIZE16);
 
-    if ( t->tsig_error == DNS_RCODE_NOERROR) {
-        tsig.mac = md;
-        tsig.macsize = mdlen; 
+	if (tsig.otherlen > 0) {
+		HMAC_Update(&ctx, tsig.other, tsig.otherlen);
+	}
+
+	HMAC_Final(&ctx, md, &mdlen);
+
+	if ( t->tsig_error == DNS_RCODE_NOERROR) {
+		tsig.mac = md;
+		tsig.macsize = mdlen;
 #if DEBUG_ENABLED && DEBUG_REPLY
-        Debug("%s: TSIG REPLY: digest [%s] size [%d]", desctask(t), hex(md, mdlen), mdlen);
+		Debug("%s: TSIG REPLY: digest [%s] size [%d]", desctask(t), hex((char *)md, mdlen), mdlen);
 #endif
-    }
+	}
 
-    /* Increment the additional field counter */
-    sign = reply;
-    sign += DNS_HEADERSIZE - SIZE16;
-    DNS_GET16(val, sign);
-    sign -= SIZE16;
-    DNS_PUT16(sign, ++val);
+	/* Increment the additional field counter */
+	sign = reply;
+	sign += DNS_HEADERSIZE - SIZE16;
+	DNS_GET16(val, sign);
+	sign -= SIZE16;
+	DNS_PUT16(sign, ++val);
 
-    headerlen = t->tsig_keynamelen + (SIZE16 * 2) + SIZE32 + SIZE16;
-    rdatalen = HMACMD5_ALGORITHM_LEN + SIZE48 + (SIZE16 * 2) \
-               + tsig.macsize + (SIZE16 * 3) + tsig.otherlen;
+	headerlen = t->tsig_keynamelen + (SIZE16 * 2) + SIZE32 + SIZE16;
+	rdatalen = HMACMD5_ALGORITHM_LEN + SIZE48 + (SIZE16 * 2) \
+			   + tsig.macsize + (SIZE16 * 3) + tsig.otherlen;
 
-    /* Construct the reply with the signature */
+	/* Construct the reply with the signature */
 	 signature = sign = malloc(t->replylen + headerlen + rdatalen);
-    if (!sign)
+	if (!sign)
 		Err(_("out of memory"));
 
-    memcpy(sign, reply, t->replylen);
-    free(reply);
+	memcpy(sign, reply, t->replylen);
+	free(reply);
 
-    sign += t->replylen;
-    t->replylen += headerlen + rdatalen;
+	sign += t->replylen;
+	t->replylen += headerlen + rdatalen;
 
-    
-    /* Build Signature */
-    DNS_PUT(sign, t->tsig_keyname, t->tsig_keynamelen);
-    DNS_PUT16(sign, DNS_QTYPE_TSIG);
-    DNS_PUT16(sign, DNS_CLASS_ANY);
+
+	/* Build Signature */
+	DNS_PUT(sign, t->tsig_keyname, t->tsig_keynamelen);
+	DNS_PUT16(sign, DNS_QTYPE_TSIG);
+	DNS_PUT16(sign, DNS_CLASS_ANY);
 	 DNS_PUT32(sign, 0);
 	 DNS_PUT16(sign, rdatalen);
 
 
-    DNS_PUT(sign, HMACMD5_ALGORITHM, HMACMD5_ALGORITHM_LEN);
-    DNS_PUT48(sign, tsig.timesigned);
-    DNS_PUT16(sign, tsig.fudge);
-    DNS_PUT16(sign, tsig.macsize);
-    DNS_PUT(sign, tsig.mac, tsig.macsize);
-    DNS_PUT16(sign, tsig.originalid);
-    DNS_PUT16(sign, tsig.error);
-    DNS_PUT16(sign, tsig.otherlen);
-    DNS_PUT(sign, tsig.other, tsig.otherlen);
+	DNS_PUT(sign, HMACMD5_ALGORITHM, HMACMD5_ALGORITHM_LEN);
+	DNS_PUT48(sign, tsig.timesigned);
+	DNS_PUT16(sign, tsig.fudge);
+	DNS_PUT16(sign, tsig.macsize);
+	DNS_PUT(sign, tsig.mac, tsig.macsize);
+	DNS_PUT16(sign, tsig.originalid);
+	DNS_PUT16(sign, tsig.error);
+	DNS_PUT16(sign, tsig.otherlen);
+	DNS_PUT(sign, tsig.other, tsig.otherlen);
 
 
 
 #if DEBUG_ENABLED
-    tsig_dump(desctask(t), &tsig);
+	tsig_dump(desctask(t), &tsig);
 #endif
 
-    HMAC_CTX_cleanup(&ctx);
+	HMAC_CTX_cleanup(&ctx);
 
-    return (signature);
+	return ((char *)signature);
 }
 
 /**************************************************************************************************
@@ -863,6 +902,11 @@ reply_process_rrlist(TASK *t, RRLIST *rrlist)
 
 						case DNS_QTYPE_SRV:
 							if (reply_add_srv(t, r) < 0)
+								return (-1);
+							break;
+
+						case DNS_QTYPE_SSHFP:
+							if (reply_add_sshfp(t, r) < 0)
 								return (-1);
 							break;
 
@@ -1045,9 +1089,9 @@ build_reply(TASK *t, int want_additional, int sign)
 		DNS_PUT(dest, edns, 11);
 	}
 
-   if (sign) {
-        t->reply = reply_add_signature(t, t->reply);
-   }
+	if (sign) {
+		t->reply = reply_add_signature(t, (uchar *)t->reply);
+	}
 
 #if DEBUG_ENABLED && DEBUG_REPLY
 	Debug("%s: reply:     id = %u", desctask(t), t->id);

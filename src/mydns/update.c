@@ -745,8 +745,8 @@ check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
     unsigned char *data = data_;
     unsigned char *key_decoded;
     const EVP_MD *md5;                                /* MD5 engine */
-    char	*query = t->query;									/* Query section */
-    char	*start = query;							   		/* Start of query section */
+    uchar	*query = (uchar *)t->query;									/* Query section */
+    uchar	*start = query;							   		/* Start of query section */
     int	querylen = t->len;									/* Length of 'query' */
     HMAC_CTX ctx;                                     /* HMAC Context */
     unsigned char md[EVP_MAX_MD_SIZE];                /* Digest */
@@ -801,7 +801,7 @@ check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
     }
 
     /* Decode */
-    t->tsig_key = base64_decode(t->key->private, l);
+    t->tsig_key = base64_decode((uchar *)t->key->private, l);
     t->tsig_keylen = (l * 3) / 4;
     
     md5 = EVP_md5();
@@ -831,7 +831,7 @@ check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
     
     /* Digest the key name */
     t->tsig_keynamelen = name_encode(t, t->tsig_keyname, rr->name, 0, 0);
-    HMAC_Update(&ctx, t->tsig_keyname, t->tsig_keynamelen); 
+    HMAC_Update(&ctx, (uchar *)t->tsig_keyname, t->tsig_keynamelen);
 
     /* Digest class + ttl */
     DNS_PUT16(data, rr->class);
@@ -841,7 +841,7 @@ check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
     HMAC_Update(&ctx, data, SIZE16 + SIZE32); 
     
     /* Digest the key algorithm */ 
-    HMAC_Update(&ctx, tsig.algorithm_value, tsig.algorithm_size); 
+    HMAC_Update(&ctx, (uchar *)tsig.algorithm_value, tsig.algorithm_size);
 
     /* Digest timesigned and fudge */
     DNS_PUT48(data, tsig.timesigned);
@@ -860,10 +860,10 @@ check_tsig(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr, int *do_sign)
     Debug("%s: TSIG CHECK: sizes query [%d] message [%d] signature [%d]", desctask(t), querylen, sum, querylen - sum);
 #endif
 
-    HMAC_Final(&ctx, md, &mdlen);
+    HMAC_Final(&ctx, md, (uint *)&mdlen);
 
 #if DEBUG_ENABLED && DEBUG_UPDATE
-    Debug("%s: TSIG CHECK: digest [%s] size [%d]", desctask(t), hex(md, mdlen), mdlen);
+    Debug("%s: TSIG CHECK: digest [%s] size [%d]", desctask(t), hex((char *)md, mdlen), mdlen);
 #endif
 
     if (memcmp(md, tsig.mac, mdlen) != 0) {

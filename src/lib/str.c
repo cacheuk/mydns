@@ -100,6 +100,7 @@ mydns_qtype_str(dns_qtype_t qtype)
 		case DNS_QTYPE_SINK:			return ("SINK");
 		case DNS_QTYPE_OPT:			return ("OPT");
 		case DNS_QTYPE_DS	:			return ("DS");
+		case DNS_QTYPE_SSHFP:		return ("SSHFP");
 		case DNS_QTYPE_RRSIG:		return ("RRSIG");
 		case DNS_QTYPE_NSEC:			return ("NSEC");
 		case DNS_QTYPE_DNSKEY:		return ("DNSKEY");

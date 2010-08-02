@@ -69,7 +69,7 @@ find_alias(TASK *t, char *fqdn)
 				of the label with `*' and check for wildcard matches. */
 			if (*label)
 			{
-				uchar wclabel[DNS_MAXNAMELEN+1], *c;
+				char wclabel[DNS_MAXNAMELEN+1], *c;
 
 				/* Generate wildcarded label, i.e. `*.example' or maybe just `*'. */
 				if (!(c = strchr(label, '.')))

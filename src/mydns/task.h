@@ -49,7 +49,7 @@ typedef struct _named_rr
 {
 	dns_rrtype_t	rrtype;					/* Record type (what table this data came from) */
 	uint32_t			id;						/* ID associated with RR */
-	unsigned char	name[DNS_MAXNAMELEN];/* Name to send with reply */
+	char				name[DNS_MAXNAMELEN];/* Name to send with reply */
 	off_t				offset;					/* The offset within the reply data (t->rdata) */
 	size_t			length;					/* The length of data within the reply */
 	uint8_t			sort_level;				/* Primary sort order */
@@ -109,8 +109,8 @@ typedef struct _named_task
 
 	uint32_t			Cnames[MAX_CNAME_LEVEL];				/* Array of CNAMEs found */
 
-	unsigned char	*qd;											/* Question section data */
-	unsigned char	*ad;											/* Additional section data */
+	char	*qd;											/* Question section data */
+	char	*ad;											/* Additional section data */
 	size_t			qdlen;										/* Size of question section */
 	size_t			adlen;										/* Size of additional section */
 	uint16_t			qdcount;										/* "qdcount", from header */
@@ -125,7 +125,7 @@ typedef struct _named_task
    
 #if WITH_SSL
    KEY            *key;                               /* Transaction key */
-   unsigned char  tsig_keyname[DNS_MAXNAMELEN];       /* Transaction Key Name */
+   char  tsig_keyname[DNS_MAXNAMELEN];       /* Transaction Key Name */
    int            tsig_keynamelen;                    /* Transaction Key Name Len */
    unsigned char  *tsig_key;                          /* Transaction Key */
    int            tsig_keylen;                        /* Transaction Key Len */

@@ -462,7 +462,7 @@ process_axfr_reply(char *reply, size_t replylen)
 void
 import_axfr(char *hostport, char *import_zone)
 {
-	unsigned char *reply, len[2];
+	char *reply, len[2];
 	int fd;
 	size_t replylen;
 

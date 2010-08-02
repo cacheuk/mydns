@@ -386,16 +386,16 @@ check_soa(const char *zone)
 static void
 check_rr_cname(void)
 {
-	unsigned char *xname;
+	char *xname;
 	int found = 0;
 
 	EXPAND_DATA(data);
 	check_name(data, "rr.data", 1);
 
 	/* A CNAME record can't have any other type of RR data for the same name */
-	if (!(xname = calloc(strlen(name) * 2 + 1, sizeof(unsigned char))))
+	if (!(xname = calloc(strlen(name) * 2 + 1, sizeof(char))))
 		Err(_("out of memory"));
-	sql_escstr(sql, xname, (unsigned char *)name, strlen(name));
+	sql_escstr(sql, xname, (char *)name, strlen(name));
 	found = sql_count(sql, "SELECT COUNT(*) FROM %s WHERE zone=%u AND name='%s' AND type != 'CNAME'",
 								  mydns_rr_table_name, rr->zone, xname);
 
@@ -406,7 +406,7 @@ check_rr_cname(void)
 		shortname(name, 1);
 		if (!(xname = calloc(strlen(name) * 2 + 1, sizeof(unsigned char))))
 			Err(_("out of memory"));
-		sql_escstr(sql, xname, (unsigned char *)name, strlen(name));
+		sql_escstr(sql, xname, (char *)name, strlen(name));
 		found = sql_count(sql, "SELECT COUNT(*) FROM %s WHERE zone=%u AND name='%s' AND type != 'CNAME'",
 									  mydns_rr_table_name, rr->zone, xname);
 		EXPAND_DATA(name);

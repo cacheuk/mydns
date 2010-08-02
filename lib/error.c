@@ -441,7 +441,7 @@ unsigned char *hex(char *mem, int  len)
         l += sprintf (buf + l, "%02x", (unsigned char) mem[idx]);
     }
     buf[l - 1] = 0;
-    return(buf);
+    return((unsigned char *)buf);
 } 
 /*--- hex() -------------------------------------------------------------------------------------*/
 

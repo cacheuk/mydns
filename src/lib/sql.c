@@ -155,7 +155,7 @@ sql_reopen(void)
 int
 sql_istable(SQL *sqlConn, const char *tablename)
 {
-	unsigned char *xtablename;
+	char *xtablename;
 #if !USE_PGSQL
 	SQL_RES *res;
 #endif
@@ -163,7 +163,7 @@ sql_istable(SQL *sqlConn, const char *tablename)
 
 	if (!(xtablename = calloc(strlen(tablename) * 2 + 1, sizeof(unsigned char))))
 		Err(_("out of memory"));
-	sql_escstr(sqlConn, xtablename, (uchar *)tablename, strlen(tablename));
+	sql_escstr(sqlConn, xtablename, (char *)tablename, strlen(tablename));
 
 #if USE_PGSQL
 	if (sql_count(sqlConn, "SELECT COUNT(*) FROM pg_class"
@@ -191,7 +191,7 @@ sql_istable(SQL *sqlConn, const char *tablename)
 int
 sql_iscolumn(SQL *sqlConn, const char *tablename, const char *columnname)
 {
-	unsigned char *xtablename, *xcolumnname;
+	char *xtablename, *xcolumnname;
 #if !USE_PGSQL
 	SQL_RES *res;
 #endif
@@ -201,8 +201,8 @@ sql_iscolumn(SQL *sqlConn, const char *tablename, const char *columnname)
 		Err(_("out of memory"));
 	if (!(xcolumnname = calloc(strlen(columnname) * 2 + 1, sizeof(unsigned char))))
 		Err(_("out of memory"));
-	sql_escstr(sqlConn, xtablename, (uchar *)tablename, strlen(tablename));
-	sql_escstr(sqlConn, xcolumnname, (uchar *)columnname, strlen(columnname));
+	sql_escstr(sqlConn, xtablename, (char *)tablename, strlen(tablename));
+	sql_escstr(sqlConn, xcolumnname, (char *)columnname, strlen(columnname));
 
 #if USE_PGSQL
 	if (sql_count(sqlConn,

@@ -140,6 +140,8 @@ mydns_rr_get_type(char *type)
 				return DNS_QTYPE_SPF;
 			if (type[1] == 'R' && type[2] == 'V' && !type[3])
 				return DNS_QTYPE_SRV;
+			if (type[1] == 'S' && type[2] == 'H' && type[3] == 'F' && type[4] == 'P' && !type[5])
+				return DNS_QTYPE_SSHFP;
 			break;
 	}
 	return 0;
@@ -205,6 +207,62 @@ mydns_rr_parse_srv(SQL_ROW row, const char *origin, MYDNS_RR *rr)
 		if ((port = strsep(&target, " \t")))
 			rr->srv_port = atoi(port);
 		memmove(rr->data, target, strlen(target)+1);
+	}
+}
+/*--- mydns_rr_parse_srv() ----------------------------------------------------------------------*/
+
+
+/**************************************************************************************************
+	MYDNS_RR_PARSE_SSHFP
+	SSHFP records contain two unsigned 8-bit integers in the "data" field before the target,
+	'sshfp_algorithm' and 'sshfp_type' - parse them and make "data" contain only the target.
+**************************************************************************************************/
+static inline void
+mydns_rr_parse_sshfp(SQL_ROW row, const char *origin, MYDNS_RR *rr)
+{
+	char *algorithm, *type, *target,*target2;
+	uchar b=0,ch;
+
+	/* Clamp 'aux' if necessary */
+	if (rr->aux > 65535)
+		rr->aux = 65535;
+
+	printf("sshfp parsing\n");
+
+	/* Parse algorithm (into sshfp_algorithm), type (into sshfp_type), and target */
+	target = rr->data;
+	if ((algorithm = strsep(&target, " \t")))
+	{
+		rr->sshfp_algorithm = atoi(algorithm);
+		if ((type = strsep(&target, " \t")))
+			rr->sshfp_type = atoi(type);
+//		memmove(rr->data, target, strlen(target)+1);
+
+//		target=rr->data;
+		target2=rr->data;
+
+		while ((ch = tolower (*target++)) != '\0') {
+			if ( ch - '0' < 10 ) b = ch - '0';
+			else if ( ch - 'a' < 'g' - 'a' ) b = ( ch - 'a' ) + 10;
+
+			b<<=4;
+
+			ch = tolower (*target++);
+			if(ch=='\0'){
+
+				printf("SSHFP: hex parsing error\n");
+				break;
+			}
+
+			if ( ch - '0' < 10 ) b |= ch - '0';
+			else if ( ch - 'a' < 'g' - 'a' ) b |= ( ch - 'a' ) + 10;
+
+			*(target2++)=b;
+		}
+		rr->sshfp_size=(target2-rr->data);
+		*target='\0';
+
+		printf("sshfp: rr->sshfp_algorithm=%d  rr->sshfp_type=%d key=%s len=%d\n",rr->sshfp_algorithm,rr->sshfp_type,rr->data,rr->sshfp_size);
 	}
 }
 /*--- mydns_rr_parse_srv() ----------------------------------------------------------------------*/
@@ -326,6 +384,9 @@ mydns_rr_parse(SQL_ROW row, const char *origin)
 
 		if (rr->type == DNS_QTYPE_SRV)
 			mydns_rr_parse_srv(row, origin, rr);
+
+		if (rr->type == DNS_QTYPE_SSHFP)
+			mydns_rr_parse_sshfp(row, origin, rr);
 	}
 	return (rr);
 }
@@ -354,12 +415,21 @@ mydns_rr_dup(MYDNS_RR *start, int recurse)
 		strncpy(rr->name, s->name, sizeof(rr->name)-1);
 		rr->type = s->type;
 		rr->class = s->class;
-		strncpy(rr->data, s->data, sizeof(rr->data)-1);
+
+		/* data is in wire format (may contain nulls) for sshfp records */
+		if(rr->type == DNS_QTYPE_SSHFP)
+			memcpy(rr->data, s->data, s->sshfp_size);
+		else
+			strncpy(rr->data, s->data, sizeof(rr->data)-1);
+
 		rr->aux = s->aux;
 		rr->ttl = s->ttl;
 #if ALIAS_ENABLED
 		rr->alias = s->alias;
 #endif
+		rr->sshfp_size = s->sshfp_size;
+		rr->sshfp_algorithm = s->sshfp_algorithm;
+		rr->sshfp_type = s->sshfp_type;
 
 		rr->srv_weight = s->srv_weight;
 		rr->srv_port = s->srv_port;
@@ -440,9 +510,8 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 {
 	MYDNS_RR *first = NULL, *last = NULL;
 	size_t	querylen;
-	uchar		query[DNS_QUERYBUFSIZ],
+	char		*wheretype,query[DNS_QUERYBUFSIZ],
 				namequery[DNS_MAXNAMELEN + DNS_MAXNAMELEN + DNS_MAXNAMELEN + 25] = "";
-	uchar		*wheretype;
 	register char *c, *cp;
 	SQL_RES	*res;
 	SQL_ROW	row;
@@ -483,6 +552,7 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 		case DNS_QTYPE_SOA:		wheretype = " AND type='SOA'"; break;
 		case DNS_QTYPE_SPF:		wheretype = " AND type='SPF'"; break;
 		case DNS_QTYPE_SRV:		wheretype = " AND type='SRV'"; break;
+		case DNS_QTYPE_SSHFP:	wheretype = " AND type='SSHFP'"; break;
 		case DNS_QTYPE_TXT:		wheretype = " AND type='TXT'"; break;
 		case DNS_QTYPE_ANY:		wheretype = ""; break;
 		default:

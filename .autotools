@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurations>
 <configuration id="org.eclipse.linuxtools.cdt.autotools.core.configuration.build.104738169">
-<option id="configure" value="configure -with-openssl --enable-alias --disable-date-logging --prefix=/NOC4/mydns --sysconfdir=/NOC4/etc --with-mysql-include=/NOC4/mysql5-prod/include/mysql/ --with-mysql-lib=/NOC4/mysql5-prod/lib/mysql/"/>
+<option id="configure" value="configure -with-openssl --enable-debug --enable-alias --disable-date-logging --prefix=/NOC4/mydns --sysconfdir=/NOC4/etc --with-mysql-include=/NOC4/mysql5-prod/include/mysql/ --with-mysql-lib=/NOC4/mysql5-prod/lib/mysql/"/>
 <option id="configdir" value=""/>
 <option id="cache-file" value=""/>
 <option id="help" value="false"/>

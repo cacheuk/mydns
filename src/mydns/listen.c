@@ -249,7 +249,7 @@ addrlist_load(int port)
 	struct ifconf ifc;
 	struct ifreq *ifr;
 	int sockfd, buflen = 8192, n;
-	unsigned char *buf;
+	void *buf;
 
 	FirstAddr = LastAddr = NULL;
 

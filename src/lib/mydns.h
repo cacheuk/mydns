@@ -234,6 +234,7 @@ typedef enum									/* Query types */
 	DNS_QTYPE_SINK			= 40,				/* Kitchen sink (experimentatl) */
 	DNS_QTYPE_OPT			= 41,				/* EDNS0 option (meta-RR) */
 	DNS_QTYPE_DS			= 43,				/* DNSSEC */
+	DNS_QTYPE_SSHFP		= 44,				/* SSH FingerPrint */
 	DNS_QTYPE_RRSIG		= 46,				/* DNSSEC */
 	DNS_QTYPE_NSEC			= 47,				/* DNSSEC */
 	DNS_QTYPE_DNSKEY		= 48,				/* DNSSEC */
@@ -348,6 +349,10 @@ typedef struct _mydns_rr							/* `rr' table data (resource records) */
 
 	/* This data used by SRV records only - parsed (and removed) from "data" */
 	uint16_t		srv_weight, srv_port;
+
+	/* This data used by SSHFP records only - parsed (and removed) from "data" */
+	uint16_t		sshfp_size;
+	uchar			sshfp_algorithm, sshfp_type;
 
 	/* For RP records, this points to the "txt" part of the data, which is preceded by a NUL */
 	char			rp_txt[DNS_MAXNAMELEN + 1];

@@ -270,7 +270,7 @@ bind_dump_rr(MYDNS_SOA *soa, MYDNS_RR *rr, int maxlen)
 		printf("%s %s\n", rr->data, rr->rp_txt);
 	else if (rr->type == DNS_QTYPE_TXT)
 	{
-		register unsigned char *c;
+		register char *c;
 		putc('"', stdout);
 		for (c = rr->data; *c; c++)
 		{

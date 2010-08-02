@@ -35,9 +35,9 @@ extern void named_cleanup(int);
 	Returns 0 on success, -1 on error, -2 if the task is now invalid.
 **************************************************************************************************/
 int
-new_task(TASK *t, unsigned char *data, size_t len)
+new_task(TASK *t, char *data, size_t len)
 {
-	unsigned char qname[DNS_MAXNAMELEN+1], *src, *qdtop;
+	char qname[DNS_MAXNAMELEN+1], *src, *qdtop;
 
 #if DEBUG_ENABLED && DEBUG_TASK
 	Debug("new_task(%p, %p, %u)", t, data, len);
@@ -128,7 +128,7 @@ new_task(TASK *t, unsigned char *data, size_t len)
 	if(t->arcount){
 		t->adlen = len - DNS_HEADERSIZE - t->qdlen;							/* Fill in additional data */
 		t->ad=t->qd+t->qdlen;
-		uchar *adp;
+		char *adp;
 		uint16_t opc;
 		adp=t->ad+1;
 		printf("t->qdlen: %d\nt->adlen: %d\n",t->qdlen,t->adlen);

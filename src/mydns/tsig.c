@@ -30,7 +30,7 @@
 	TSIG_DUMP
 **************************************************************************************************/
 void
-tsig_dump(unsigned char *desctask, TSIG *s)
+tsig_dump(char *desctask, TSIG *s)
 {
 	Debug("%s: TSIG DUMP: algorithm=[%s] timesigned=[%lld] fudge=[%d] macsize=[%d] mac=[%s] originalid=[%d] error=[%d] otherlen=[%d] other=[%s]",
            desctask,
@@ -38,11 +38,11 @@ tsig_dump(unsigned char *desctask, TSIG *s)
            s->timesigned, 
            s->fudge, 
            s->macsize, 
-           hex(s->mac, s->macsize), 
+           hex((char *)s->mac, s->macsize),
            s->originalid, 
            s->error, 
            s->otherlen,
-           hex(s->other, s->otherlen)
+           hex((char *)s->other, s->otherlen)
     );
 }
 /*--- tsig_dump() ---------------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ tsig_dump(unsigned char *desctask, TSIG *s)
 	DETACH_TSIG
 **************************************************************************************************/
 void
-detach_tsig(unsigned char *query, int len, UQRR *rr, TSIG *tsig) {
+detach_tsig(char *query, int len, UQRR *rr, TSIG *tsig) {
    char *start = rr->rdata;
    char *src = rr->rdata;
    int n;
@@ -115,7 +115,7 @@ unsigned char *base64_decode(unsigned char *buffer, unsigned int len) {
    Fetch the key from the database
 **************************************************************************************************/
 KEY *
-tsig_find_key(unsigned char *desctask, unsigned char *keyname) 
+tsig_find_key(char *desctask, char *keyname)
 {
    SQL_RES	*res = NULL;
 	SQL_ROW	row;
