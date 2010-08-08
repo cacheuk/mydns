@@ -17,9 +17,6 @@
 /* Disable date/time in verbose output? */
 #undef DISABLE_DATE_LOGGING
 
-/* Compile with support for alternate column names? */
-#undef DN_COLUMN_NAMES
-
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
 #undef ENABLE_NLS
@@ -313,6 +310,10 @@
 
 /* Define if integer division by zero raises signal SIGFPE. */
 #undef INTDIV0_RAISES_SIGFPE
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Default location of configuration file */
 #undef MYDNS_CONF

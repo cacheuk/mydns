@@ -78,25 +78,13 @@ extern int mydns_rr_use_stamp;
 /* NOTE: `type' is listed at the end so that we can possibly set the value of `aux' for
 	convenience based on the RR type; for example, an `A' record might store the IP in `aux'. */
 #define	MYDNS_SOA_NUMFIELDS	10
-#ifdef DN_COLUMN_NAMES
-#	define	MYDNS_SOA_FIELDS	"zone_id,CONCAT(origin,\".\"),\"ns\",CONCAT(owner,\".\"),serial,refresh,retry,expire,min_ttl,min_ttl"
-#else
 #	define	MYDNS_SOA_FIELDS	"id,origin,ns,mbox,serial,refresh,retry,expire,minimum,ttl"
-#endif
 
 #define	MYDNS_RR_NUMFIELDS	7
-#ifdef DN_COLUMN_NAMES
-#	define	MYDNS_RR_FIELDS	"rr_id,zone_id,name,data,pref,7200,type"
-#else
 #	define	MYDNS_RR_FIELDS	"id,zone,name,data,aux,ttl,type"
-#endif
 
 #define	MYDNS_KEY_NUMFIELDS	7
-#ifdef DN_COLUMN_NAMES
-#	define	MYDNS_KEY_FIELDS	"key_id,name,algorithm,size,type,key,private"
-#else
 #	define	MYDNS_KEY_FIELDS	"id,name,algorithm,size,type,key,private"
-#endif
 
 /* Does the specified string end with a dot? */
 #define	ENDS_WITH_DOT(s)	(s && (s[strlen(s)-1] == '.'))

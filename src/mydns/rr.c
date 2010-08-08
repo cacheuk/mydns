@@ -107,14 +107,6 @@ rrlist_add(
 		*d = '\0';
 	}
 
-#if DN_COLUMN_NAMES
-	if (rrtype == DNS_RRTYPE_RR && ds == ADDITIONAL)
-	{
-		MYDNS_RR *r = (MYDNS_RR *)rr;
-		if (!strcmp(r->name, "*"))
-			return;
-	}
-#endif
 
 #if DEBUG_ENABLED && DEBUG_RR
 	{

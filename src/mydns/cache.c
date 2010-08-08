@@ -33,9 +33,6 @@ CACHE *ReplyCache = NULL;							/* Reply cache */
 CACHE *NegativeCache = NULL;						/* Negative zone cache */
 #endif
 
-#ifdef DN_COLUMN_NAMES
-extern char	*dn_default_ns;						/* Default NS for directNIC */
-#endif
 
 
 #if (HASH_TYPE == ORIGINAL_HASH) || (HASH_TYPE == ADDITIVE_HASH)
@@ -604,10 +601,6 @@ zone_cache_find(TASK *t, uint32_t zone, char *origin, dns_qtype_t type,
 			}
 		}
 
-#ifdef DN_COLUMN_NAMES
-		if (soa && dn_default_ns)
-			strncpy(soa->ns, dn_default_ns, sizeof(soa->ns)-1);
-#endif
 
 #if USE_NEGATIVE_CACHE
 		if (!(C = soa ? ZoneCache : NegativeCache))
@@ -639,11 +632,6 @@ zone_cache_find(TASK *t, uint32_t zone, char *origin, dns_qtype_t type,
 			}
 		}
 
-#ifdef DN_COLUMN_NAMES
-		/* DN database has no TTL - use parent's */
-		if (rr && parent && parent->ttl)
-			rr->ttl = parent->ttl;
-#endif
 
 #if USE_NEGATIVE_CACHE
 		if (!(C = rr ? ZoneCache : NegativeCache))

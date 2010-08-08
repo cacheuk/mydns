@@ -333,14 +333,12 @@ db_verify_tables(void)
 	sql_open(user, password, host, database);
 
 	/* XXX: Fix this - check existence of database etc */
-#ifndef DN_COLUMN_NAMES
 	db_verify_table(database, mydns_soa_table_name, MYDNS_SOA_FIELDS);
 	db_verify_table(database, mydns_rr_table_name, MYDNS_RR_FIELDS);
 
 	db_check_ptr_table(database);
 
 	db_check_optional();
-#endif
 
 	sql_close(sql);
 }

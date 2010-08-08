@@ -47,9 +47,6 @@ struct sockaddr_in6	recursive_sa6;							/* Recursive server (IPv6) */
 #endif
 struct sockaddr_in	recursive_sa;							/* Recursive server (IPv4) */
 
-#ifdef DN_COLUMN_NAMES
-char		*dn_default_ns = NULL;								/* Default NS for directNIC */
-#endif
 char		*server_id = NULL;									/* Server ID */
 
 /*
@@ -97,9 +94,6 @@ static CONFIG defConfig[] = {
 {	"rr-table",				MYDNS_RR_TABLE,			N_("Name of table containing RR data")},
 {	"key-table",			MYDNS_KEY_TABLE,			N_("Name of table containing KEY")},
 
-#ifdef DN_COLUMN_NAMES
-{	"default-ns",			"ns0.example.com.",		N_("Default nameserver for all zones")},
-#endif
 
 {	"soa-where",			"",							N_("Extra WHERE clause for SOA queries")},
 {	"rr-where",				"",							N_("Extra WHERE clause for RR queries")},
@@ -463,9 +457,6 @@ load_config(void)
 			Errx("out of memory");
 	}
 
-#ifdef DN_COLUMN_NAMES
-	dn_default_ns = conf_get(&Conf, "default-ns", NULL);
-#endif
 }
 /*--- load_config() -----------------------------------------------------------------------------*/
 

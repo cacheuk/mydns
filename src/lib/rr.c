@@ -365,10 +365,6 @@ mydns_rr_parse(SQL_ROW row, const char *origin)
 				case DNS_QTYPE_NS:
 				case DNS_QTYPE_RP:
 				case DNS_QTYPE_SRV:
-#ifdef DN_COLUMN_NAMES
-					/* Just append dot for DN */
-					strncat(rr->data, ".", sizeof(rr->data) - strlen(rr->data) - 1);
-#else
 					{
 						int namelen = strlen(rr->data);
 						if (namelen && rr->data[namelen-1] != '.')
@@ -377,7 +373,6 @@ mydns_rr_parse(SQL_ROW row, const char *origin)
 							strncat(rr->data, origin, sizeof(rr->data) - namelen - 2);
 						}
 					}
-#endif
 					break;
 				default: break;
 			}
@@ -515,10 +510,6 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 	register char *c, *cp;
 	SQL_RES	*res;
 	SQL_ROW	row;
-#ifdef DN_COLUMN_NAMES
-	int		originlen = origin ? strlen(origin) : 0;
-	int		namelen = name ? strlen(name) : 0;
-#endif
 
 #if DEBUG_ENABLED && DEBUG_LIB_RR
 	Debug("mydns_rr_load(zone=%u, type='%s', name='%s', origin='%s')",
@@ -574,21 +565,6 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 				return (0);
 	}
 
-#ifdef DN_COLUMN_NAMES
-	/* Remove dot from origin and name for DN */
-	if (originlen && origin[originlen - 1] == '.')
-		origin[originlen-1] = '\0';
-	else
-		originlen = 0;
-
-	if (name)
-	{
-		if (namelen && name[namelen - 1] == '.')
-			name[namelen-1] = '\0';
-		else
-			namelen = 0;
-	}
-#endif
 
 	/* Construct query */
 	if (name)
@@ -599,35 +575,17 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 				snprintf(namequery, sizeof(namequery), "(name='' OR name='%s')", origin);
 			else
 			{
-#ifdef DN_COLUMN_NAMES
-				snprintf(namequery, sizeof(namequery), "name='%s'", name);
-#else
 				snprintf(namequery, sizeof(namequery), "(name='%s' OR name='%s.%s')", name, name, origin);
-#endif
 			}
 		}
 		else
 			snprintf(namequery, sizeof(namequery), "name='%s'", name);
 	}
 
-#ifdef DN_COLUMN_NAMES
-	if (originlen)
-		origin[originlen - 1] = '.';							/* Readd dot to origin for DN */
-
-	if (name)
-	{
-		if (namelen)
-			name[namelen - 1] = '.';
-	}
-#endif
 
 	querylen = snprintf(query, sizeof(query),
 		"SELECT "MYDNS_RR_FIELDS"%s FROM %s WHERE "
-#ifdef DN_COLUMN_NAMES
-			"zone_id=%u%s"
-#else
 			"zone=%u%s"
-#endif
 			"%s%s%s%s",
 			(mydns_rr_use_active ? ",active" : ""),
 			mydns_rr_table_name,

@@ -89,7 +89,6 @@ AC_ENABLE_PROFILING			#	Enable profiling?
 AC_ENABLE_DEBUG				#	Enable debugging?
 AC_ENABLE_VALGRIND			#	Compile with Valgrind-friendly flags?
 AC_ENABLE_STRICT				#	Compile with extra-strict warnings?
-AC_ENABLE_ALT_NAMES			#	Alternate column names for DN
 AC_ENABLE_STATUS				#	Enable the STATUS opcode to check server status
 AC_DISABLE_DATE_LOGGING		#	Disable date/time in verbose output?
 AC_MYDNS_VARS					#  Set variables containing dirs

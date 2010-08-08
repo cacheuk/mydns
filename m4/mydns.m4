@@ -406,27 +406,6 @@ AC_DEFUN([AC_ENABLE_ALIAS],
 
 
 ##
-##	Make --enable-alt-names turn on alternate column names for DN
-##
-AC_DEFUN([AC_ENABLE_ALT_NAMES],
-	[
-		AC_MSG_CHECKING([whether to enable alternate column names])
-		AC_ARG_ENABLE(alt-names,
-			AC_HELP_STRING([--enable-alt-names], [enable alternate column names (do not use)]),
-			[
-				if test "$enableval" = yes
-				then
-					AC_DEFINE(DN_COLUMN_NAMES, 1, [Compile with support for alternate column names?])
-					AC_MSG_RESULT([yes])
-				else
-					AC_MSG_RESULT([no])
-				fi
-			], AC_MSG_RESULT([no]))
-	]
-)
-
-
-##
 ##	--enable-status enables the STATUS opcode to report server status
 ##
 AC_DEFUN([AC_ENABLE_STATUS],

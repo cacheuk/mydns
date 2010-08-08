@@ -225,9 +225,6 @@ mydns_soa_load(SQL *sqlConn, MYDNS_SOA **rptr, char *origin)
 	SQL_RES			*res;
 	SQL_ROW			row;
 	register char	*c;
-#ifdef DN_COLUMN_NAMES
-	int				originlen = strlen(origin);
-#endif
 
 	if (rptr) *rptr = NULL;
 
@@ -243,12 +240,6 @@ mydns_soa_load(SQL *sqlConn, MYDNS_SOA **rptr, char *origin)
 		if (SQL_BADCHAR(*c))
 			return (0);
 
-#ifdef DN_COLUMN_NAMES
-	if (origin[originlen - 1] == '.')
-		origin[originlen - 1] = '\0';							/* Remove dot from origin for DN */
-	else
-		originlen = 0;
-#endif
 
 	/* Construct query */
 	if (mydns_soa_where_clause)
@@ -262,10 +253,6 @@ mydns_soa_load(SQL *sqlConn, MYDNS_SOA **rptr, char *origin)
 			(mydns_soa_use_active ? ",active" : ""),
 			mydns_soa_table_name, origin);
 
-#ifdef DN_COLUMN_NAMES
-	if (originlen)
-		origin[originlen - 1] = '.';							/* Readd dot to origin for DN */
-#endif
 
 	/* Submit query */
 	if (!(res = sql_query(sqlConn, query, querylen)))
