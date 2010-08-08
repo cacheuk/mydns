@@ -50,7 +50,7 @@ struct sockaddr_in	recursive_sa;							/* Recursive server (IPv4) */
 #ifdef DN_COLUMN_NAMES
 char		*dn_default_ns = NULL;								/* Default NS for directNIC */
 #endif
-
+char		*server_id = NULL;									/* Server ID */
 
 /*
 **  Default config values
@@ -103,6 +103,7 @@ static CONFIG defConfig[] = {
 
 {	"soa-where",			"",							N_("Extra WHERE clause for SOA queries")},
 {	"rr-where",				"",							N_("Extra WHERE clause for RR queries")},
+{	"server-id",			"",							N_("CH TXT record for id.server")},
 
 {	NULL,						NULL,							NULL}
 };
@@ -377,6 +378,7 @@ load_config(void)
 	int n;
 	struct passwd *pwd = NULL;
 	struct group *grp = NULL;
+	char *conf_server_id = NULL;
 
 	/* Load config */
 	conf_load(&Conf, opt_conf);
@@ -454,6 +456,12 @@ load_config(void)
 
 	/* Set recursive server if specified */
 	conf_set_recursive();
+
+	conf_server_id=conf_get(&Conf, "server-id", NULL);
+	if (conf_server_id && strlen(conf_server_id)){
+		if (!(server_id = strdup(conf_server_id)))
+			Errx("out of memory");
+	}
 
 #ifdef DN_COLUMN_NAMES
 	dn_default_ns = conf_get(&Conf, "default-ns", NULL);

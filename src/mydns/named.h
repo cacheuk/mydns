@@ -121,6 +121,7 @@ extern int		recursive_family;								/* Protocol family for recursion */
 extern struct sockaddr_in6	recursive_sa6;					/* Recursive server (IPv6) */
 #endif
 extern struct sockaddr_in	recursive_sa;					/* Recursive server (IPv4) */
+extern char	*server_id;										/* Server ID */
 
 
 #if ALIAS_ENABLED

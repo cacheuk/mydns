@@ -118,12 +118,27 @@ status_version_mydns(TASK *t)
 
 
 /**************************************************************************************************
+	STATUS_ID_SERVER
+	Respond to 'id.server.' query.
+**************************************************************************************************/
+static int
+status_id_server(TASK *t)
+{
+	/* Generate fake TXT rr with version number and add to reply list */
+	status_fake_rr(t, ANSWER, t->qname, "%s", server_id);
+
+	return (0);
+}
+/*--- status_id_server() ---------------------------------------------------------------------*/
+
+
+/**************************************************************************************************
 	REMOTE_STATUS
 **************************************************************************************************/
 int
 remote_status(TASK *t)
 {
-	if (t->qtype != DNS_QTYPE_TXT)
+	if (t->qtype != DNS_QTYPE_TXT && t->qtype != DNS_QTYPE_ANY)
 		return formerr(t, DNS_RCODE_NOTIMP, ERR_NO_CLASS, NULL);
 
 	/* Emulate BIND's 'version.bind.' ("dig txt chaos version.bind") */
@@ -133,6 +148,10 @@ remote_status(TASK *t)
 	/* Extended MyDNS 'version.mydns.' ("dig txt chaos version.mydns") */
 	else if (!strcasecmp(t->qname, "version.mydns."))
 		return status_version_mydns(t);
+
+	/* Server ID 'id.server.' ("dig id.server ch txt") */
+	else if (!strcasecmp(t->qname, "id.server.") && server_id != NULL)
+		return status_id_server(t);
 
 	return formerr(t, DNS_RCODE_NOTIMP, ERR_NO_CLASS, NULL);
 }
