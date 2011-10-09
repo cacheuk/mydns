@@ -311,7 +311,7 @@ mydns_rr_parse_naptr(SQL_ROW row, const char *origin, MYDNS_RR *rr)
 	Returns NULL on error.
 **************************************************************************************************/
 inline MYDNS_RR *
-mydns_rr_parse(SQL_ROW row, const char *origin)
+mydns_rr_parse(SQL_ROW row, const char *origin, dns_qtype_t type)
 {
 	MYDNS_RR *rr;
 
@@ -333,9 +333,9 @@ mydns_rr_parse(SQL_ROW row, const char *origin)
 			return (NULL);
 		}
 #if ALIAS_ENABLED
-		if (rr->type == DNS_QTYPE_ALIAS)
+		if (rr->type == DNS_QTYPE_ALIAS && (type==DNS_QTYPE_A || type==DNS_QTYPE_AAAA))
 		{
-			rr->type = DNS_QTYPE_A;
+			rr->type = type;
 			rr->alias = 1;
 		}
 		else
@@ -530,10 +530,11 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 	{
 #if ALIAS_ENABLED
 		case DNS_QTYPE_A:			wheretype = " AND (type='A' OR type='ALIAS')"; break;
+		case DNS_QTYPE_AAAA:		wheretype = " AND (type='AAAA' OR type='ALIAS')"; break;
 #else
 		case DNS_QTYPE_A:			wheretype = " AND type='A'"; break;
-#endif
 		case DNS_QTYPE_AAAA:		wheretype = " AND type='AAAA'"; break;
+#endif
 		case DNS_QTYPE_CNAME:	wheretype = " AND type='CNAME'"; break;
 		case DNS_QTYPE_HINFO:	wheretype = " AND type='HINFO'"; break;
 		case DNS_QTYPE_MX:		wheretype = " AND type='MX'"; break;
@@ -616,7 +617,7 @@ mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 		if (mydns_rr_use_active && row[MYDNS_RR_NUMFIELDS] && !GETBOOL(row[MYDNS_RR_NUMFIELDS]))
 			continue;
 
-		if (!(new = mydns_rr_parse(row, origin)))
+		if (!(new = mydns_rr_parse(row, origin, type)))
 			continue;
 
 		/* Always trim origin from name (XXX: Why? When did I add this?) */
