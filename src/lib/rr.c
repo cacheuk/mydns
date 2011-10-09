@@ -103,6 +103,12 @@ mydns_rr_get_type(char *type)
 				return DNS_QTYPE_CNAME;
 			break;
 
+		case 'D':
+			if (type[1] == 'N' && type[2] == 'S' && type[3] == 'K' && type[4] == 'E' && type[5] == 'Y' && !type[6])
+				return DNS_QTYPE_DNSKEY;
+			break;
+
+
 		case 'H':
 			if (type[1] == 'I' && type[2] == 'N' && type[3] == 'F' && type[4] == 'O' && !type[5])
 				return DNS_QTYPE_HINFO;

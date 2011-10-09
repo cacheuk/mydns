@@ -680,12 +680,113 @@ reply_add_sshfp(TASK *t, RR *r)
 	*(dest++)=rr->sshfp_type;
 	DNS_PUT(dest, src, len);
 
-	printf("sshfp: sshfp_size=%d  len=%d  rr->sshfp_algorithm=%d  rr->sshfp_type=%d key=%40s\n",rr->sshfp_size,len,rr->sshfp_algorithm,rr->sshfp_type,rr->data);
+	printf("sshfp: sshfp_size=%d  len=%zu  rr->sshfp_algorithm=%d  rr->sshfp_type=%d key=%40s\n",rr->sshfp_size,len,rr->sshfp_algorithm,rr->sshfp_type,rr->data);
 
 
 	return (0);
 }
 /*--- reply_add_sshfp() ---------------------------------------------------------------------------*/
+
+static inline int
+reply_add_rrsig(TASK *t, RR *r)
+{
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN RRSIG", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_RRSIG, rr->ttl, "RRSIG") < 0)
+		return (-1);
+
+	return -1;
+}
+
+static inline int
+reply_add_nsec(TASK *t, RR *r)
+{
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN NSEC", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_NSEC, rr->ttl, "NSEC") < 0)
+		return (-1);
+
+	return -1;
+}
+
+static inline int
+reply_add_ds(TASK *t, RR *r)
+{
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN DS", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_DS, rr->ttl, "DS") < 0)
+		return (-1);
+
+	return -1;
+}
+
+/**************************************************************************************************
+	REPLY_ADD_DNSKEY
+
+	Returns the numeric offset of the start of this record within the reply, or -1 on error.
+**************************************************************************************************/
+static inline int
+reply_add_dnskey(TASK *t, RR *r)
+{
+	char		*dest,*src;
+	uint16_t	size,numstrs,copylen;
+	size_t	len;
+	MYDNS_RR	*rr = (MYDNS_RR *)r->rr;
+	char *tmp, *port, *target;
+	int flags,protocol,algorithm;
+
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN SPF", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_DNSKEY, rr->ttl, "DNSKEY") < 0)
+		return (-1);
+
+
+	target = rr->data;
+	flags = atoi(strsep(&target, " \t"));
+	protocol = atoi(strsep(&target, " \t"));
+	algorithm = atoi(strsep(&target, " \t"));
+
+	printf("flags: %d\nprotocol: %d\nalgorithm: %d\n",flags,protocol,algorithm);
+
+	len = strlen(target);
+
+
+	src = target;
+	numstrs = (len/255)+1;
+	size = len + numstrs;
+	r->length += SIZE16 + SIZE16 + SIZE16 + size;
+
+	if (!(dest = rdata_enlarge(t, SIZE16 + size)))
+		return dnserror(t, DNS_RCODE_SERVFAIL, ERR_INTERNAL);
+
+	DNS_PUT16(dest, size);
+	DNS_PUT16(dest,flags);
+	*dest++=(uint8_t)protocol;
+	*dest++=(uint8_t)algorithm;
+
+	while(numstrs--){
+		if(len > 255) copylen = 255; else copylen = len;
+
+		*dest++ = copylen;
+		DNS_PUT(dest, src, copylen);
+		src += copylen;
+		len -= copylen;
+	}
+
+	return (0);
+}
+/*--- reply_add_dnskey() ---------------------------------------------------------------------------*/
 
 
 /**************************************************************************************************
@@ -865,6 +966,26 @@ reply_process_rrlist(TASK *t, RRLIST *rrlist)
 								return (-1);
 							break;
 
+						case DNS_QTYPE_DNSKEY:
+							if (reply_add_dnskey(t, r) < 0)
+								return (-1);
+							break;
+
+						case DNS_QTYPE_RRSIG:
+							if (reply_add_rrsig(t, r) < 0)
+								return (-1);
+							break;
+
+						case DNS_QTYPE_NSEC:
+							if (reply_add_nsec(t, r) < 0)
+								return (-1);
+							break;
+
+						case DNS_QTYPE_DS:
+							if (reply_add_ds(t, r) < 0)
+								return (-1);
+							break;
+
 						case DNS_QTYPE_HINFO:
 							if (reply_add_hinfo(t, r) < 0)
 								return (-1);
@@ -982,7 +1103,7 @@ reply_check_truncation(TASK *t, int *ancount, int *nscount, int *arcount)
 		return;
 
 #if DEBUG_ENABLED && DEBUG_REPLY
-	Debug("reply_check_truncation() needs to truncate reply (%d) to fit packet max (%d)",
+	Debug("reply_check_truncation() needs to truncate reply (%zu) to fit packet max (%zu)",
 			t->rdlen, maxrd);
 #endif
 
