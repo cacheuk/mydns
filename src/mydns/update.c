@@ -1125,7 +1125,7 @@ update_delete_rrset_all(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 
    if (!(xhost = calloc(strlen(rr->name) * 2 + 1, sizeof(char))))
       Err(_("out of memory"));
-	querylen = snprintf(query, sizeof(query), "%.*s", strlen(rr->name) - strlen(soa->origin) - 1, rr->name);
+	querylen = snprintf(query, sizeof(query), "%.*s", (int)(strlen(rr->name) - strlen(soa->origin) - 1), rr->name);
 	sql_escstr(sql, xhost, query, querylen);
 
 	querylen = snprintf(query, sizeof(query), "DELETE FROM %s WHERE zone=%u AND (name='%s' OR name='%s')",
@@ -1197,7 +1197,7 @@ update_delete_rr(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 
    if (!(xhost = calloc(strlen(rr->name) * 2 + 1, sizeof(char))))
       Err(_("out of memory"));
-	querylen = snprintf(query, sizeof(query), "%.*s", strlen(rr->name) - strlen(soa->origin) - 1, rr->name);
+	querylen = snprintf(query, sizeof(query), "%.*s", (int)(strlen(rr->name) - strlen(soa->origin) - 1), rr->name);
 	sql_escstr(sql, xhost, query, querylen);
 
    if (!(xdata = calloc(strlen(data) * 2 + 1, sizeof(char))))
@@ -1265,7 +1265,7 @@ update_delete_rrset(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 
    if (!(xhost = calloc(strlen(rr->name) * 2 + 1, sizeof(char))))
       Err(_("out of memory"));
-	querylen = snprintf(query, sizeof(query), "%.*s", strlen(rr->name) - strlen(soa->origin) - 1, rr->name);
+	querylen = snprintf(query, sizeof(query), "%.*s", (int)(strlen(rr->name) - strlen(soa->origin) - 1), rr->name);
 	sql_escstr(sql, xhost, query, querylen);
 
 	querylen = snprintf(query, sizeof(query),
@@ -1323,7 +1323,7 @@ process_update(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 	}
 
 	/* 2.5.2: Delete an RRset */
-	if (rr->type != DNS_CLASS_ANY && !rr->rdlength)
+	if (rr->type != DNS_QTYPE_ANY && !rr->rdlength)
 	{
 #if DEBUG_ENABLED && DEBUG_UPDATE
 		Debug("%s: DNS UPDATE: 2.5.2: Delete an RRset", desctask(t));
@@ -1332,7 +1332,7 @@ process_update(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 	}
 
 	/* 2.5.3: Delete all RRsets from a name */
-	if (rr->type == DNS_CLASS_ANY && !rr->rdlength)
+	if (rr->type == DNS_QTYPE_ANY && !rr->rdlength)
 	{
 #if DEBUG_ENABLED && DEBUG_UPDATE
 		Debug("%s: DNS UPDATE: 2.5.3: Delete all RRsets from a name", desctask(t));
@@ -1341,7 +1341,7 @@ process_update(TASK *t, MYDNS_SOA *soa, UQ *q, UQRR *rr)
 	}
 
 	/* 2.5.4: Delete an RR from an RRset */
-	if (rr->type != DNS_CLASS_ANY && rr->rdlength)
+	if (rr->type != DNS_QTYPE_ANY && rr->rdlength)
 	{
 #if DEBUG_ENABLED && DEBUG_UPDATE
 		Debug("%s: DNS UPDATE: 2.5.4: Delete an RR from an RRset", desctask(t));
