@@ -47,7 +47,7 @@ AC_DEFUN([AC_WITH_OPENSSL_LIB],
 		do
 			if test "$ac_ssl_lib_found" != yes
 			then
-				AC_CHECK_FILE($dir/libssl.a, ac_ssl_lib_found=yes, ac_ssl_lib_found=no)
+				AC_CHECK_FILE($dir/libssl.so, ac_ssl_lib_found=yes, ac_ssl_lib_found=no)
 				if test "$ac_ssl_lib_found" = yes
 				then
 					LIBSSL="-L$dir -lssl -lcrypto"
@@ -496,7 +496,7 @@ AC_DEFUN([AC_LIB_MATH],
 ##
 AC_DEFUN([AC_LIB_MYSQLCLIENT],
 	[
-		libmysqlclient_dirs="/usr/local/mysql/lib /usr/local/lib/mysql /usr/local/lib /usr/lib/mysql /usr/lib /lib"
+		libmysqlclient_dirs="/usr/lib /lib"
 		AC_ARG_WITH(mysql-lib,
 			AC_HELP_STRING([--with-mysql-lib=DIR], [look for the MySQL client library in DIR]),
 			libmysqlclient_dirs="$withval $libmysqlclient_dirs")
@@ -505,10 +505,7 @@ AC_DEFUN([AC_LIB_MYSQLCLIENT],
 			if test "$libmysqlclient_found" != yes; then
 				AC_CHECK_FILE($libmysqlclient_dir/libmysqlclient.a, libmysqlclient_found=yes, libmysqlclient_found=no)
 				if test "$libmysqlclient_found" != yes; then
-					AC_CHECK_FILE($libmysqlclient_dir/libmysqlclient.so.10, libmysqlclient_found=yes, libmysqlclient_found=no)
-				fi
-				if test "$libmysqlclient_found" != yes; then
-					AC_CHECK_FILE($libmysqlclient_dir/libmysqlclient.so.12, libmysqlclient_found=yes, libmysqlclient_found=no)
+					AC_CHECK_FILE($libmysqlclient_dir/libmysqlclient.so, libmysqlclient_found=yes, libmysqlclient_found=no)
 				fi
 				if test "$libmysqlclient_found" = yes; then
 					## libmysqlclient depends on libz
