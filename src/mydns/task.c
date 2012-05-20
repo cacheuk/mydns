@@ -40,7 +40,7 @@ new_task(TASK *t, char *data, size_t len)
 	char qname[DNS_MAXNAMELEN+1], *src, *qdtop;
 
 #if DEBUG_ENABLED && DEBUG_TASK
-	Debug("new_task(%p, %p, %u)", t, data, len);
+	Debug("new_task(%p, %p, %zu)", t, data, len);
 #endif
 
 	/* Query needs to at least contain a proper header */
@@ -131,7 +131,7 @@ new_task(TASK *t, char *data, size_t len)
 		char *adp;
 		uint16_t opc;
 		adp=t->ad+1;
-		printf("t->qdlen: %d\nt->adlen: %d\n",t->qdlen,t->adlen);
+		printf("t->qdlen: %zu\nt->adlen: %zu\n",t->qdlen,t->adlen);
 		printf("       label: %02x\n",*t->ad);
 		DNS_GET16(opc,adp);
 		printf("       qtype: %d\n",opc);
@@ -441,9 +441,9 @@ task_output_info(TASK *t, char *update_desc)
 		"%s "		/* Return code (NOERROR, NXDOMAIN, etc) */
 		"%s "		/* Reason */
 		"%d "		/* Question section */
-		"%d "		/* Answer section */
-		"%d "		/* Authority section */
-		"%d "		/* Additional section */
+		"%zu "		/* Answer section */
+		"%zu "		/* Authority section */
+		"%zu "		/* Additional section */
 		"LOG "
 		"%s "		/* Reply from cache? */
 		"%s "		/* Opcode */
