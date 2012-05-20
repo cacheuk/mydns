@@ -233,7 +233,7 @@ cache_status(CACHE *C)
 					collisions++;
 
 		Notice(_("%s cache %.0f%% useful (%u hits, %u misses),"
-					" %u collisions (%.0f%%), %.0f%% full (%u records), %u bytes, avg life %u sec"),
+					" %u collisions (%.0f%%), %.0f%% full (%zu records), %zu bytes, avg life %u sec"),
 			C->name, PCT(C->questions, C->hits), C->hits, C->misses,
 			collisions, PCT(C->slots, collisions),
 			PCT(C->limit, C->count), C->count, C->size,
@@ -721,7 +721,7 @@ reply_cache_find(TASK *t)
 	register void		*p;
 
 #if DEBUG_ENABLED && DEBUG_CACHE
-	Debug("%s: reply_cache_find(qdlen=%d proto=%d)", desctask(t), t->qdlen, t->protocol);
+	Debug("%s: reply_cache_find(qdlen=%zu proto=%d)", desctask(t), t->qdlen, t->protocol);
 #endif
 
 	if (!ReplyCache || t->qdlen > DNS_MAXPACKETLEN_UDP)
@@ -784,7 +784,7 @@ reply_cache_find(TASK *t)
 				t->reply_from_cache = 1;
 				ReplyCache->hits++;
 #if DEBUG_ENABLED && DEBUG_CACHE
-				Debug(_("%s: %d octet reply found in cache"), desctask(t), t->replylen);
+				Debug(_("%s: %zu octet reply found in cache"), desctask(t), t->replylen);
 #endif
 
 				return (1);
@@ -809,7 +809,7 @@ add_reply_to_cache(TASK *t)
 	register void		*p;
 
 #if DEBUG_ENABLED && DEBUG_CACHE
-	Debug("%s: add_reply_to_cache(qdlen=%d rcode=%s rd=%d proto=%d)", desctask(t),
+	Debug("%s: add_reply_to_cache(qdlen=%zu rcode=%s rd=%d proto=%d)", desctask(t),
 			t->qdlen, mydns_rcode_str(t->hdr.rcode), t->hdr.rd, t->protocol);
 #endif
 
@@ -917,7 +917,7 @@ add_reply_to_cache(TASK *t)
 	mrulist_add(ReplyCache, n);
 
 #if DEBUG_ENABLED && DEBUG_CACHE
-	Debug("%s: %s (qtype=%s qdlen=%d rd=%d proto=%d)", desctask(t), _("reply cached"),
+	Debug("%s: %s (qtype=%s qdlen=%zu rd=%d proto=%d)", desctask(t), _("reply cached"),
 			mydns_qtype_str(t->qtype), t->qdlen, t->hdr.rd, t->protocol);
 #endif
 }
