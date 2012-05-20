@@ -105,7 +105,7 @@ recursive_fwd_write(TASK *t)
 		return dnserror(t, DNS_RCODE_FORMERR, querylen);
 
 #if DEBUG_ENABLED && DEBUG_RECURSIVE
-	Debug("%s: recursive_fwd_write(): Constructed %d byte query", desctask(t), querylen);
+	Debug("%s: recursive_fwd_write(): Constructed %zu byte query", desctask(t), querylen);
 #endif
 
 	/* Send to remote server */
@@ -128,7 +128,7 @@ recursive_fwd_write(TASK *t)
 	}
 
 #if DEBUG_ENABLED && DEBUG_RECURSIVE
-	Debug("%s: recursive_fwd_write(): Sent %d bytes to %s", desctask(t), querylen, recursive_fwd_server);
+	Debug("%s: recursive_fwd_write(): Sent %zu bytes to %s", desctask(t), querylen, recursive_fwd_server);
 #endif
 	return 0;
 }
