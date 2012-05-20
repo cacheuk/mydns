@@ -73,7 +73,7 @@ inline void
 meter(unsigned long current, unsigned long total)
 {
 	char m[80];
-	int num;
+	int num,len;
 	time_t now;
 	static time_t last_update = 0;
 
@@ -84,7 +84,7 @@ meter(unsigned long current, unsigned long total)
 	{
 		memset(m, ' ', 73);
 		m[72] = '\r';
-		fwrite(m, 73, 1, stderr);
+		len=fwrite(m, 73, 1, stderr);
 		fflush(stderr);
 		last_update = 0;
 		return;
