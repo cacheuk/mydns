@@ -106,8 +106,9 @@ mydns_rr_get_type(char *type)
 		case 'D':
 			if (type[1] == 'N' && type[2] == 'S' && type[3] == 'K' && type[4] == 'E' && type[5] == 'Y' && !type[6])
 				return DNS_QTYPE_DNSKEY;
+			if (type[1] == 'S' && !type[2])
+				return DNS_QTYPE_DS;
 			break;
-
 
 		case 'H':
 			if (type[1] == 'I' && type[2] == 'N' && type[3] == 'F' && type[4] == 'O' && !type[5])
@@ -122,6 +123,8 @@ mydns_rr_get_type(char *type)
 		case 'N':
 			if (type[1] == 'S' && !type[2])
 				return DNS_QTYPE_NS;
+			if (type[1] == 'S' && type[2] == 'E' && type[3] == 'C' && !type[4])
+				return DNS_QTYPE_NSEC;
 			if (type[1] == 'A' && type[2] == 'P' && type[3] == 'T' && type[4] == 'R' && !type[5])
 				return DNS_QTYPE_NAPTR;
 			break;
@@ -139,6 +142,8 @@ mydns_rr_get_type(char *type)
 		case 'R':
 			if (type[1] == 'P' && !type[2])
 				return DNS_QTYPE_RP;
+			if (type[1] == 'R' && type[2] == 'S' && type[3] == 'I' && type[4] == 'G' && !type[5])
+				return DNS_QTYPE_RRSIG;
 			break;
 
 		case 'S':
