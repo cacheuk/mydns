@@ -99,9 +99,9 @@ read_tcp_length(TASK *t)
 	}
 
 	if ((t->len = ((len[0] << 8) | (len[1]))) < DNS_HEADERSIZE)
-		return Warnx("%s: %s (%d octet%s)", clientaddr(t), _("TCP message too short"), t->len, S(t->len));
+		return Warnx("%s: %s (%zu octet%s)", clientaddr(t), _("TCP message too short"), t->len, S(t->len));
 	if (t->len > DNS_MAXPACKETLEN_TCP)
-		return Warnx("%s: %s (%d octet%s)", clientaddr(t), _("TCP message too long"), t->len, S(t->len));
+		return Warnx("%s: %s (%zu octet%s)", clientaddr(t), _("TCP message too long"), t->len, S(t->len));
 
 	if (!(t->query = calloc(1, t->len + 1)))
 		Err(_("out of memory"));
