@@ -478,7 +478,7 @@ dump_rr_long(MYDNS_SOA *soa)
 	{
 		MYDNS_RR *rr;
 
-		if (!(rr = mydns_rr_parse(row, soa->origin)))
+		if (!(rr = mydns_rr_parse(row, soa->origin, 0)))
 			continue;
 		dump_rr(soa, rr, maxlen);
 		mydns_rr_free(rr);		

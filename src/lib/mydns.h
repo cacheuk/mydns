@@ -395,7 +395,7 @@ extern long			mydns_rr_count(SQL *);
 extern void			mydns_set_rr_table_name(char *);
 extern void			mydns_set_rr_where_clause(char *);
 extern dns_qtype_t mydns_rr_get_type(char *);
-extern MYDNS_RR	*mydns_rr_parse(SQL_ROW, const char *);
+extern MYDNS_RR	*mydns_rr_parse(SQL_ROW, const char *, dns_qtype_t type);
 extern int			mydns_rr_load(SQL *, MYDNS_RR **, uint32_t, dns_qtype_t, char *, char *);
 extern MYDNS_RR	*mydns_rr_dup(MYDNS_RR *, int);
 extern size_t		mydns_rr_size(MYDNS_RR *);

@@ -587,7 +587,7 @@ check_zone(void)
 		return;
 	while ((row = sql_getrow(res)))
 	{
-		if (!(rr = mydns_rr_parse(row, soa->origin)))
+		if (!(rr = mydns_rr_parse(row, soa->origin, 0)))
 			continue;
 		check_rr();
 		mydns_rr_free(rr);

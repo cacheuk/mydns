@@ -59,7 +59,7 @@ find_alias(TASK *t, char *fqdn)
 #if DEBUG_ENABLED && DEBUG_ALIAS
 				Debug("%s: trying exact match `%s'", desctask(t), label);
 #endif
-				if ((rr = find_rr(t, soa, DNS_QTYPE_A, label))){
+				if ((rr = find_rr(t, soa, t->qtype, label))){
 					mydns_soa_free(soa);
 					return (rr);
 				}
@@ -80,7 +80,7 @@ find_alias(TASK *t, char *fqdn)
 #if DEBUG_ENABLED && DEBUG_ALIAS
 				Debug("%s: trying wildcard `%s'", desctask(t), wclabel);
 #endif
-				if ((rr = find_rr(t, soa, DNS_QTYPE_A, wclabel))){
+				if ((rr = find_rr(t, soa, t->qtype, wclabel))){
 					mydns_soa_free(soa);
 					return (rr);
 				}
@@ -107,6 +107,8 @@ alias_recurse(TASK *t, datasection_t section, char *fqdn, MYDNS_SOA *soa, char *
 	char name[DNS_MAXNAMELEN+1];
 	register MYDNS_RR *rr;
 	register int depth, n;
+	MYDNS_RR *rrcur;
+	dns_qtype_t lasttype;
 
 	if (LASTCHAR(alias->data) != '.')
 		snprintf(name, sizeof(name), "%s.%s", alias->data, soa->origin);
@@ -121,13 +123,28 @@ alias_recurse(TASK *t, datasection_t section, char *fqdn, MYDNS_SOA *soa, char *
 		/* Are there any alias records? */
 		if ((rr = find_alias(t, name)))
 		{
-			/* We need an A record that is not an alias to end the chain. */
-			if (rr->alias == 0)
-			{
-				/* Override the id and name, because rrlist_add() checks for duplicates and we might have several records aliased to one */
-				rr->id = alias->id;
-				strcpy(rr->name, alias->name);
-				rrlist_add(t, section, DNS_RRTYPE_RR, (void *)rr, fqdn);
+			/* We need an A record that is not an alias to end the chain.
+			 * XXX: We would need to handle this differently if we want to handle
+			 * ALIAS mixed with other record types at the same level. for now we
+			 * simply apply the CNAME rule that if ALIAS exists it must be the only
+			 * record at that label/level
+			 */
+			if (rr->alias == 0) {
+				rrcur=rr;
+				lasttype=rrcur->type;
+				do	{
+					if (lasttype != rrcur->type) {
+						lasttype = rrcur->type;
+						t->sort_level++;
+					}
+
+					/* Override the id and name, because rrlist_add() checks for duplicates and we might have several records aliased to one */
+					/* rrcur->id = alias->id; */
+					strcpy(rrcur->name, alias->name);
+					rrlist_add(t, section, DNS_RRTYPE_RR, (void *)rrcur, fqdn);
+					rrcur=rrcur->next;
+				} while (rrcur);
+
 				t->sort_level++;
 				mydns_rr_free(rr);
 				return (1);

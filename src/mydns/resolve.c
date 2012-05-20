@@ -177,13 +177,14 @@ process_rr(TASK *t, datasection_t section, dns_qtype_t qtype, char *fqdn,
 			return cname_recurse(t, section, qtype, fqdn, soa, label, r, level);
 
 	/* Find RRs matching QTYPE */
-	for (r = rr; r; r = r->next)
+	for (r = rr; r; r = r->next){
 		if (r->type == qtype || qtype == DNS_QTYPE_ANY)
 		{
 #if ALIAS_ENABLED
 			/* If the RR is an ALIAS then follow it, otherwise just add it. */
-			if (r->alias)
+			if (r->alias){
 				rv += alias_recurse(t, section, fqdn, soa, label, r);
+			}
 			else
 			{
 				rrlist_add(t, section, DNS_RRTYPE_RR, (void *)r, fqdn);
@@ -194,6 +195,7 @@ process_rr(TASK *t, datasection_t section, dns_qtype_t qtype, char *fqdn,
 			rv++;
 #endif
 		}
+	}
 	t->sort_level++;
 
 	/* If we found no matching RR's but there are NS records, and the name isn't empty
@@ -348,6 +350,15 @@ resolve_label(TASK *t, datasection_t section, dns_qtype_t qtype,
 	/* Only check this if the label is the first in the list */
 	if (full_match)
 	{
+		if(qtype==DNS_QTYPE_A || qtype==DNS_QTYPE_AAAA){
+			if ((rr = find_rr(t, soa, qtype, label)))
+			{
+				rv = process_rr(t, section, qtype, fqdn, soa, label, rr, level);
+				mydns_rr_free(rr);
+				add_authority_ns(t, section, soa, label);
+				return (rv);
+			}
+		}
 		if ((rr = find_rr(t, soa, DNS_QTYPE_ANY, label)))
 		{
 			rv = process_rr(t, section, qtype, fqdn, soa, label, rr, level);

@@ -344,7 +344,7 @@ mydns_rr_parse(SQL_ROW row, const char *origin, dns_qtype_t type)
 			return (NULL);
 		}
 #if ALIAS_ENABLED
-		if (rr->type == DNS_QTYPE_ALIAS && (type==DNS_QTYPE_A || type==DNS_QTYPE_AAAA))
+		if (rr->type == DNS_QTYPE_ALIAS && (type==DNS_QTYPE_A || type==DNS_QTYPE_AAAA || type==DNS_QTYPE_ANY))
 		{
 			rr->type = type;
 			rr->alias = 1;
