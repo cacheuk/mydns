@@ -353,7 +353,7 @@ axfr(TASK *t)
 	/* Report result */
 	gettimeofday(&finish, NULL);
 #if DEBUG_ENABLED && DEBUG_AXFR
-	Debug("AXFR: %u records, %u octets, %.3fs", 
+	Debug("AXFR: %lu records, %lu octets, %.3fs",
 		total_records, total_octets,
 		((finish.tv_sec + finish.tv_usec / 1000000.0) - (start.tv_sec + start.tv_usec / 1000000.0)));
 #endif
