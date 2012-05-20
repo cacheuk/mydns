@@ -1,123 +1,123 @@
 /**************************************************************************************************
-	$Id: conf.c,v 1.59 2006/01/18 20:46:46 bboy Exp $
+ $Id: conf.c,v 1.59 2006/01/18 20:46:46 bboy Exp $
 
-	Copyright (C) 2002-2005  Don Moore <bboy@bboy.net>
+ Copyright (C) 2002-2005  Don Moore <bboy@bboy.net>
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at Your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at Your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-**************************************************************************************************/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ **************************************************************************************************/
 
 #include "named.h"
 
 /* Make this nonzero to enable debugging for this source file */
 #define	DEBUG_CONF	1
 
-
 #include <pwd.h>
 #include <grp.h>
 
-CONFIG	*Conf = (CONFIG *)NULL;								/* Config options */
-int		opt_daemon = 0;										/* Run in background? (-d, --daemon) */
-char		*opt_conf = MYDNS_CONF;								/* Location of config file (-c, --conf) */
-uid_t		perms_uid = 0;											/* User permissions */
-gid_t		perms_gid = 0;											/* Group permissions */
-time_t	task_timeout;											/* Task timeout */
-int		axfr_enabled = 0;										/* Enable AXFR? */
-int		tcp_enabled = 0;										/* Enable TCP? */
-int		dns_update_enabled = 0;								/* Enable DNS UPDATE? */
-int		ignore_minimum = 0;									/* Ignore minimum TTL? */
+CONFIG *Conf = (CONFIG *) NULL; /* Config options */
+int opt_daemon = 0; /* Run in background? (-d, --daemon) */
+char *opt_conf = MYDNS_CONF; /* Location of config file (-c, --conf) */
+uid_t perms_uid = 0; /* User permissions */
+gid_t perms_gid = 0; /* Group permissions */
+time_t task_timeout; /* Task timeout */
+int axfr_enabled = 0; /* Enable AXFR? */
+int tcp_enabled = 0; /* Enable TCP? */
+int dns_update_enabled = 0; /* Enable DNS UPDATE? */
+int ignore_minimum = 0; /* Ignore minimum TTL? */
 
-int		forward_recursive = 0;								/* Forward recursive queries? */
-char		*recursive_fwd_server = NULL;						/* Name of server for recursive forwarding */
-int		recursive_family = AF_INET;						/* Protocol family for recursion */
+int forward_recursive = 0; /* Forward recursive queries? */
+char *recursive_fwd_server = NULL; /* Name of server for recursive forwarding */
+int recursive_family = AF_INET; /* Protocol family for recursion */
 
 #if HAVE_IPV6
-struct sockaddr_in6	recursive_sa6;							/* Recursive server (IPv6) */
+struct sockaddr_in6 recursive_sa6; /* Recursive server (IPv6) */
 #endif
-struct sockaddr_in	recursive_sa;							/* Recursive server (IPv4) */
+struct sockaddr_in recursive_sa; /* Recursive server (IPv4) */
 
-char		*server_id = NULL;									/* Server ID */
+char *server_id = NULL; /* Server ID */
 
 /*
-**  Default config values
-**
-**  If the 'name' is "-", the --dump-config option treats 'desc' as a header field.
-*/
+ **  Default config values
+ **
+ **  If the 'name' is "-", the --dump-config option treats 'desc' as a header field.
+ */
 static CONFIG defConfig[] = {
 /* name						value							desc	*/
-{	"-",						NULL,							N_("DATABASE INFORMATION")},
-{	"db-host",				"localhost",				N_("SQL server hostname")},
-{	"db-user",				"username",					N_("SQL server username")},
-{	"db-password",			"password",					N_("SQL server password")},
-{	"database",				PACKAGE_NAME,				N_("MyDNS database name")},
+{ "-", NULL, N_("DATABASE INFORMATION") }, { "db-host", "localhost",
+		N_("SQL server hostname") }, { "db-user", "username",
+		N_("SQL server username") }, { "db-password", "password",
+		N_("SQL server password") }, { "database", PACKAGE_NAME,
+		N_("MyDNS database name") },
 
-{	"-",						NULL,							N_("GENERAL OPTIONS")},
+{ "-", NULL, N_("GENERAL OPTIONS") },
 
-{	"user",					"nobody",					N_("Run with the permissions of this user")},
-{	"group",					"nobody",					N_("Run with the permissions of this group")},
-{	"listen",				"*",							N_("Listen on these addresses ('*' for all)"),	"bind"},
-{	"no-listen",			"",							N_("Do not listen on these addresses")},
+{ "user", "nobody", N_("Run with the permissions of this user") }, { "group",
+		"nobody", N_("Run with the permissions of this group") }, { "listen", "*",
+		N_("Listen on these addresses ('*' for all)"), "bind" }, { "no-listen",
+		"", N_("Do not listen on these addresses") },
 
-{	"-",						NULL,							N_("CACHE OPTIONS")},
+{ "-", NULL, N_("CACHE OPTIONS") },
 
-{	"cache-size",			"1024",						N_("Maximum number of elements stored in the data/reply cache")},
-{	"cache-expire",		"60",							N_("Number of seconds after which cached data/replies expire")},
+{ "cache-size", "1024",
+		N_("Maximum number of elements stored in the data/reply cache") }, {
+		"cache-expire", "60",
+		N_("Number of seconds after which cached data/replies expire") },
 
-{	"zone-cache-size",	"1024",						N_("Maximum number of elements stored in the zone cache")},
-{	"zone-cache-expire",	"60",							N_("Number of seconds after which cached zones expires")},
+{ "zone-cache-size", "1024",
+		N_("Maximum number of elements stored in the zone cache") }, {
+		"zone-cache-expire", "60",
+		N_("Number of seconds after which cached zones expires") },
 
-{	"reply-cache-size",	"1024",						N_("Maximum number of elements stored in the reply cache")},
-{	"reply-cache-expire","30",							N_("Number of seconds after which cached replies expire")},
+{ "reply-cache-size", "1024",
+		N_("Maximum number of elements stored in the reply cache") }, {
+		"reply-cache-expire", "30",
+		N_("Number of seconds after which cached replies expire") },
 
-{	"-",						NULL,							N_("ESOTERICA")},
-{	"log",					"LOG_DAEMON",				N_("Facility to use for program output (LOG_*/stdout/stderr)")},
-{	"pidfile",				"/var/run/"PACKAGE_NAME".pid",	N_("Path to PID file")},
-{	"timeout",				"120",						N_("Number of seconds after which queries time out")},
-{	"multicpu",				"1",							N_("Number of CPUs installed on your system")},
-{	"recursive",			"",							N_("Location of recursive resolver")},
-{	"allow-axfr",			"no",							N_("Should AXFR be enabled?")},
-{	"allow-tcp",			"no",							N_("Should TCP be enabled?")},
-{	"allow-update",		"no",							N_("Should DNS UPDATE be enabled?")},
-{	"ignore-minimum",		"no",							N_("Ignore minimum TTL for zone?")},
-{	"soa-table",			MYDNS_SOA_TABLE,			N_("Name of table containing SOA records")},
-{	"rr-table",				MYDNS_RR_TABLE,			N_("Name of table containing RR data")},
-{	"key-table",			MYDNS_KEY_TABLE,			N_("Name of table containing KEY")},
+{ "-", NULL, N_("ESOTERICA") }, { "log", "LOG_DAEMON",
+		N_("Facility to use for program output (LOG_*/stdout/stderr)") }, {
+		"pidfile", "/var/run/"PACKAGE_NAME".pid", N_("Path to PID file") }, {
+		"timeout", "120", N_("Number of seconds after which queries time out") },
+		{ "multicpu", "1", N_("Number of CPUs installed on your system") }, {
+				"recursive", "", N_("Location of recursive resolver") }, {
+				"allow-axfr", "no", N_("Should AXFR be enabled?") }, { "allow-tcp",
+				"no", N_("Should TCP be enabled?") }, { "allow-update", "no",
+				N_("Should DNS UPDATE be enabled?") }, { "ignore-minimum", "no",
+				N_("Ignore minimum TTL for zone?") }, { "soa-table",
+				MYDNS_SOA_TABLE, N_("Name of table containing SOA records") },
+		{ "rr-table", MYDNS_RR_TABLE, N_("Name of table containing RR data") }, {
+				"key-table", MYDNS_KEY_TABLE, N_("Name of table containing KEY") },
 
+		{ "soa-where", "", N_("Extra WHERE clause for SOA queries") }, {
+				"rr-where", "", N_("Extra WHERE clause for RR queries") }, {
+				"server-id", "", N_("CH TXT record for id.server") },
 
-{	"soa-where",			"",							N_("Extra WHERE clause for SOA queries")},
-{	"rr-where",				"",							N_("Extra WHERE clause for RR queries")},
-{	"server-id",			"",							N_("CH TXT record for id.server")},
-
-{	NULL,						NULL,							NULL}
-};
-
+		{ NULL, NULL, NULL } };
 
 /**************************************************************************************************
-	DUMP_CONFIG
-	Output configuration info (in a sort of config-file format).
-**************************************************************************************************/
-void
-dump_config(void)
-{
-	time_t	time_now = time(NULL);
-	int		len = 0, w = 0, n, defaulted;
-	char		pair[512], buf[80];
-	CONFIG	*c;
+ DUMP_CONFIG
+ Output configuration info (in a sort of config-file format).
+ **************************************************************************************************/
+void dump_config(void) {
+	time_t time_now = time(NULL);
+	int len = 0, w = 0, n, defaulted;
+	char pair[512], buf[80];
+	CONFIG *c;
 
 	/*
-	**	Pretty header
-	*/
+	 **	Pretty header
+	 */
 	puts("##");
 	puts("##  "MYDNS_CONF);
 	printf("##  %.24s\n", ctime(&time_now));
@@ -125,25 +125,21 @@ dump_config(void)
 	puts("##");
 
 	/*
-	** Get longest words
-	*/
-	for (n = 0; defConfig[n].name; n++)
-	{
+	 ** Get longest words
+	 */
+	for (n = 0; defConfig[n].name; n++) {
 		char *value = conf_get(&Conf, defConfig[n].name, &defaulted);
 
 		c = &defConfig[n];
 		if (!c->value || !c->value[0])
 			continue;
-		if (!value)
-		{
+		if (!value) {
 			if ((len = strlen(c->name) + (c->value ? strlen(c->value) : 0)) > w)
 				w = len;
-		}
-		else
-		{
+		} else {
 			char *cp, *vbuf, *v;
-			if (!strcasecmp(c->name, "listen") || !strcasecmp(c->name, "no-listen"))
-			{
+			if (!strcasecmp(c->name, "listen")
+					|| !strcasecmp(c->name, "no-listen")) {
 				while ((cp = strchr(value, ',')))
 					*cp = CONF_FS_CHAR;
 			}
@@ -157,24 +153,20 @@ dump_config(void)
 	}
 	w += strlen(" = ");
 
-
 	/*
-	**	Output name/value pairs
-	*/
-	for (n = 0; defConfig[n].name; n++)
-	{
-		char	*value = conf_get(&Conf, defConfig[n].name, &defaulted);
+	 **	Output name/value pairs
+	 */
+	for (n = 0; defConfig[n].name; n++) {
+		char *value = conf_get(&Conf, defConfig[n].name, &defaulted);
 
 		c = &defConfig[n];
 
-		if (c->name[0] == '-')
-		{
+		if (c->name[0] == '-') {
 			printf("\n\n%-*.*s\t# %s\n\n", w, w, " ", _(c->desc));
 			continue;
 		}
 
-		if (!value)
-		{
+		if (!value) {
 			if (!c->value || !c->value[0])
 				continue;
 			value = c->value;
@@ -186,51 +178,40 @@ dump_config(void)
 			c->value = "nogroup";
 
 		/* If cache-size/cache-expire are set, copy values into data/reply-cache-size */
-		if (!strcasecmp(c->name, "cache-size"))
-		{
+		if (!strcasecmp(c->name, "cache-size")) {
 			if (defaulted)
 				continue;
-			else
-			{
-				snprintf(buf, sizeof(buf), "%d", atou(value) - (atou(value)/3));
+			else {
+				snprintf(buf, sizeof(buf), "%d", atou(value) - (atou(value) / 3));
 				conf_clobber(&Conf, "zone-cache-size", buf);
-				snprintf(buf, sizeof(buf), "%d", atou(value)/3);
+				snprintf(buf, sizeof(buf), "%d", atou(value) / 3);
 				conf_clobber(&Conf, "reply-cache-size", buf);
 			}
-		}
-		else if (!strcasecmp(c->name, "cache-expire"))
-		{
+		} else if (!strcasecmp(c->name, "cache-expire")) {
 			if (defaulted)
 				continue;
-			else
-			{
+			else {
 				snprintf(buf, sizeof(buf), "%d", atou(value));
 				conf_clobber(&Conf, "zone-cache-expire", buf);
-				snprintf(buf, sizeof(buf), "%d", atou(value)/2);
+				snprintf(buf, sizeof(buf), "%d", atou(value) / 2);
 				conf_clobber(&Conf, "reply-cache-expire", buf);
 			}
-		}
-		else if (!strcasecmp(c->name, "listen") || !strcasecmp(c->name, "no-listen"))
-		{
+		} else if (!strcasecmp(c->name, "listen")
+				|| !strcasecmp(c->name, "no-listen")) {
 			char *cp, *vbuf, *v;
 			while ((cp = strchr(value, ',')))
 				*cp = CONF_FS_CHAR;
 			if (!(vbuf = strdup(value)))
 				Err("strdup");
-			for (cp = vbuf; (v = strsep(&cp, CONF_FS_STR));)
-			{
-				if (v == vbuf)
-				{
+			for (cp = vbuf; (v = strsep(&cp, CONF_FS_STR));) {
+				if (v == vbuf) {
 					snprintf(pair, sizeof(pair), "%s = %s", c->name, v);
 					printf("%-*.*s\t# %s\n", w, w, pair, _(c->desc));
-				}
-				else
+				} else
 					printf("%s = %s\n", c->name, v);
 			}
 			Free(vbuf);
-		}
-		else
-		{
+		} else {
 			snprintf(pair, sizeof(pair), "%s = %s", c->name, value);
 			printf("%-*.*s\t# %s\n", w, w, pair, _(c->desc));
 		}
@@ -239,35 +220,44 @@ dump_config(void)
 }
 /*--- dump_config() -----------------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	CONF_SET_LOGGING
-	Sets the logging type and opens the syslog connection if necessary.
-**************************************************************************************************/
-void
-conf_set_logging(void)
-{
+ CONF_SET_LOGGING
+ Sets the logging type and opens the syslog connection if necessary.
+ **************************************************************************************************/
+void conf_set_logging(void) {
 	char logtype[80];
 
-	strncpy(logtype, conf_get(&Conf, "log", NULL), sizeof(logtype)-1);
+	strncpy(logtype, conf_get(&Conf, "log", NULL), sizeof(logtype) - 1);
 	strtolower(logtype);
 
 	if (!err_file)
 		closelog();
 
-	if (!strcmp(logtype, "stderr")) { err_file = stderr; closelog(); }
-	else if (!strcmp(logtype, "stdout")) { err_file = stdout; closelog(); }
-	else if (!strcmp(logtype, "log_daemon")) error_init(NULL, LOG_DAEMON);
-	else if (!strcmp(logtype, "log_local0")) error_init(NULL, LOG_LOCAL0);
-	else if (!strcmp(logtype, "log_local1")) error_init(NULL, LOG_LOCAL1);
-	else if (!strcmp(logtype, "log_local2")) error_init(NULL, LOG_LOCAL2);
-	else if (!strcmp(logtype, "log_local3")) error_init(NULL, LOG_LOCAL3);
-	else if (!strcmp(logtype, "log_local4")) error_init(NULL, LOG_LOCAL4);
-	else if (!strcmp(logtype, "log_local5")) error_init(NULL, LOG_LOCAL5);
-	else if (!strcmp(logtype, "log_local6")) error_init(NULL, LOG_LOCAL6);
-	else if (!strcmp(logtype, "log_local7")) error_init(NULL, LOG_LOCAL7);
-	else
-	{
+	if (!strcmp(logtype, "stderr")) {
+		err_file = stderr;
+		closelog();
+	} else if (!strcmp(logtype, "stdout")) {
+		err_file = stdout;
+		closelog();
+	} else if (!strcmp(logtype, "log_daemon"))
+		error_init(NULL, LOG_DAEMON);
+	else if (!strcmp(logtype, "log_local0"))
+		error_init(NULL, LOG_LOCAL0);
+	else if (!strcmp(logtype, "log_local1"))
+		error_init(NULL, LOG_LOCAL1);
+	else if (!strcmp(logtype, "log_local2"))
+		error_init(NULL, LOG_LOCAL2);
+	else if (!strcmp(logtype, "log_local3"))
+		error_init(NULL, LOG_LOCAL3);
+	else if (!strcmp(logtype, "log_local4"))
+		error_init(NULL, LOG_LOCAL4);
+	else if (!strcmp(logtype, "log_local5"))
+		error_init(NULL, LOG_LOCAL5);
+	else if (!strcmp(logtype, "log_local6"))
+		error_init(NULL, LOG_LOCAL6);
+	else if (!strcmp(logtype, "log_local7"))
+		error_init(NULL, LOG_LOCAL7);
+	else {
 		FILE *fp;
 
 		if (!(fp = fopen(logtype, "a")))
@@ -278,51 +268,44 @@ conf_set_logging(void)
 }
 /*--- conf_set_logging() ------------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	CHECK_CONFIG_FILE_PERMS
-**************************************************************************************************/
-void
-check_config_file_perms(void)
-{
+ CHECK_CONFIG_FILE_PERMS
+ **************************************************************************************************/
+void check_config_file_perms(void) {
 	FILE *fp;
 
-	if ((fp = fopen(opt_conf, "r")))
-	{
-		Warnx("%s: %s", opt_conf, _("WARNING: config file is readable by unprivileged user"));
+	if ((fp = fopen(opt_conf, "r"))) {
+		Warnx("%s: %s", opt_conf,
+				_("WARNING: config file is readable by unprivileged user"));
 		fclose(fp);
 	}
 }
 /*--- check_config_file_perms() -----------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	CONF_SET_RECURSIVE
-	If the 'recursive' configuration option was specified, set the recursive server.
-**************************************************************************************************/
-void
-conf_set_recursive(void)
-{
-	char	*c, *address = conf_get(&Conf, "recursive", NULL), addr[512];
-	int	port = 53;
+ CONF_SET_RECURSIVE
+ If the 'recursive' configuration option was specified, set the recursive server.
+ **************************************************************************************************/
+void conf_set_recursive(void) {
+	char *c, *address = conf_get(&Conf, "recursive", NULL), addr[512];
+	int port = 53;
 
 	if (!address || !address[0])
 		return;
-	strncpy(addr, address, sizeof(addr)-1);
+	strncpy(addr, address, sizeof(addr) - 1);
 
 #if HAVE_IPV6
-	if (is_ipv6(addr))		/* IPv6 - treat '+' as port separator */
+	if (is_ipv6(addr)) /* IPv6 - treat '+' as port separator */
 	{
 		recursive_family = AF_INET6;
-		if ((c = strchr(addr, '+')))
-		{
+		if ((c = strchr(addr, '+'))) {
 			*c++ = '\0';
 			if (!(port = atoi(c)))
 				port = 53;
 		}
-		if (inet_pton(AF_INET6, addr, &recursive_sa6.sin6_addr) <= 0)
-		{
-			Warnx("%s: %s", address, _("invalid network address for recursive server"));
+		if (inet_pton(AF_INET6, addr, &recursive_sa6.sin6_addr) <= 0) {
+			Warnx("%s: %s", address,
+					_("invalid network address for recursive server"));
 			return;
 		}
 		recursive_sa6.sin6_family = AF_INET6;
@@ -333,20 +316,18 @@ conf_set_recursive(void)
 #endif
 		if (!(recursive_fwd_server = strdup(address)))
 			recursive_fwd_server = _("forwarder");
-	}
-	else							/* IPv4 - treat '+' or ':' as port separator  */
+	} else /* IPv4 - treat '+' or ':' as port separator  */
 #endif
 	{
 		recursive_family = AF_INET;
-		if ((c = strchr(addr, '+')) || (c = strchr(addr, ':')))
-		{
+		if ((c = strchr(addr, '+')) || (c = strchr(addr, ':'))) {
 			*c++ = '\0';
 			if (!(port = atoi(c)))
 				port = 53;
 		}
-		if (inet_pton(AF_INET, addr, &recursive_sa.sin_addr) <= 0)
-		{
-			Warnx("%s: %s", address, _("invalid network address for recursive server"));
+		if (inet_pton(AF_INET, addr, &recursive_sa.sin_addr) <= 0) {
+			Warnx("%s: %s", address,
+					_("invalid network address for recursive server"));
 			return;
 		}
 		recursive_sa.sin_family = AF_INET;
@@ -361,14 +342,11 @@ conf_set_recursive(void)
 }
 /*--- conf_set_recursive() ----------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	LOAD_CONFIG
-	Load the configuration file.
-**************************************************************************************************/
-void
-load_config(void)
-{
+ LOAD_CONFIG
+ Load the configuration file.
+ **************************************************************************************************/
+void load_config(void) {
 	int n;
 	struct passwd *pwd = NULL;
 	struct group *grp = NULL;
@@ -378,8 +356,7 @@ load_config(void)
 	conf_load(&Conf, opt_conf);
 
 	/* Set defaults */
-	for (n = 0; defConfig[n].name; n++)
-	{
+	for (n = 0; defConfig[n].name; n++) {
 		if (defConfig[n].name[0] == '-' || !defConfig[n].value)
 			continue;
 		if (!conf_get(&Conf, defConfig[n].name, NULL))
@@ -394,16 +371,15 @@ load_config(void)
 	if (conf_get(&Conf, "mysql-pass", NULL))
 		conf_set(&Conf, "db-password", conf_get(&Conf, "mysql-pass", NULL), 0);
 	if (conf_get(&Conf, "mysql-password", NULL))
-		conf_set(&Conf, "db-password", conf_get(&Conf, "mysql-password", NULL), 0);
+		conf_set(&Conf, "db-password", conf_get(&Conf, "mysql-password", NULL),
+				0);
 
 #if HAVE_GETPWUID
 	/* Set default for database username to real username if none was provided */
-	if (!conf_get(&Conf, "db-user", NULL))
-	{
+	if (!conf_get(&Conf, "db-user", NULL)) {
 		struct passwd *pwd2;
 
-		if ((pwd2 = getpwuid(getuid())) && pwd2->pw_name)
-		{
+		if ((pwd2 = getpwuid(getuid())) && pwd2->pw_name) {
 			conf_set(&Conf, "db-user", pwd2->pw_name, 0);
 			memset(pwd2, 0, sizeof(struct passwd));
 		}
@@ -417,19 +393,19 @@ load_config(void)
 	perms_gid = pwd->pw_gid;
 	memset(pwd, 0, sizeof(struct passwd));
 
-	if (!(grp = getgrnam(conf_get(&Conf, "group", NULL))) && !(grp = getgrnam("nobody")))
-	{
-		Warnx(_("error loading gid for group `%s'"), conf_get(&Conf, "group", NULL));
-		Warnx(_("using gid %lu from user `%s'"), (unsigned long)perms_gid, conf_get(&Conf, "user", NULL));
-	}
-	else
-	{
+	if (!(grp = getgrnam(conf_get(&Conf, "group", NULL)))
+			&& !(grp = getgrnam("nobody"))) {
+		Warnx(_("error loading gid for group `%s'"),
+				conf_get(&Conf, "group", NULL));
+		Warnx(_("using gid %lu from user `%s'"), (unsigned long) perms_gid,
+				conf_get(&Conf, "user", NULL));
+	} else {
 		perms_gid = grp->gr_gid;
 		memset(grp, 0, sizeof(struct group));
 	}
 
 	/* We call conf_set_logging() again after moving into background, but it's called here
-		to report on errors. */
+	 to report on errors. */
 	conf_set_logging();
 
 	/* Set global options */
@@ -451,8 +427,8 @@ load_config(void)
 	/* Set recursive server if specified */
 	conf_set_recursive();
 
-	conf_server_id=conf_get(&Conf, "server-id", NULL);
-	if (conf_server_id && strlen(conf_server_id)){
+	conf_server_id = conf_get(&Conf, "server-id", NULL);
+	if (conf_server_id && strlen(conf_server_id)) {
 		if (!(server_id = strdup(conf_server_id)))
 			Errx("out of memory");
 	}

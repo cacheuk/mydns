@@ -1,22 +1,22 @@
 /**************************************************************************************************
-	$Id: status.c,v 1.13 2006/01/18 20:46:47 bboy Exp $
+ $Id: status.c,v 1.13 2006/01/18 20:46:47 bboy Exp $
 
-	Copyright (C) 2002-2005  Don Moore <bboy@bboy.net>
+ Copyright (C) 2002-2005  Don Moore <bboy@bboy.net>
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at Your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at Your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-**************************************************************************************************/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ **************************************************************************************************/
 
 #include "named.h"
 
@@ -25,17 +25,15 @@
 /* Make this nonzero to enable debugging for this source file */
 #define	DEBUG_STATUS 1
 
-
 /**************************************************************************************************
-	STATUS_FAKE_RR
-	Generates a fake TXT rr and adds it to the requested data section.
-**************************************************************************************************/
-static inline void
-status_fake_rr(TASK *t, datasection_t ds, const char *name, const char *fmt, ...)
-{
+ STATUS_FAKE_RR
+ Generates a fake TXT rr and adds it to the requested data section.
+ **************************************************************************************************/
+static inline void status_fake_rr(TASK *t, datasection_t ds, const char *name,
+		const char *fmt, ...) {
 	va_list ap;
 	char buf[128];
-	MYDNS_RR *rr;													/* Temporary resource record */
+	MYDNS_RR *rr; /* Temporary resource record */
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
@@ -43,25 +41,22 @@ status_fake_rr(TASK *t, datasection_t ds, const char *name, const char *fmt, ...
 
 	if (!(rr = calloc(1, sizeof(MYDNS_RR))))
 		Err(_("out of memory"));
-	strncpy(rr->name, name, sizeof(rr->name)-1);
+	strncpy(rr->name, name, sizeof(rr->name) - 1);
 	rr->class = DNS_CLASS_CHAOS;
 	rr->type = DNS_QTYPE_TXT;
-	strncpy(rr->data, buf, sizeof(rr->data)-1);
+	strncpy(rr->data, buf, sizeof(rr->data) - 1);
 
 	/* Add to list */
-	rrlist_add(t, ds, DNS_RRTYPE_RR, (void *)rr, rr->name);
+	rrlist_add(t, ds, DNS_RRTYPE_RR, (void *) rr, rr->name);
 	Free(rr);
 }
 /*--- status_fake_rr() --------------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	STATUS_VERSION_BIND
-	Respond to 'version.bind.' query.
-**************************************************************************************************/
-static int
-status_version_bind(TASK *t)
-{
+ STATUS_VERSION_BIND
+ Respond to 'version.bind.' query.
+ **************************************************************************************************/
+static int status_version_bind(TASK *t) {
 	/* Generate fake TXT rr with version number and add to reply list */
 	status_fake_rr(t, ANSWER, t->qname, "%s", VERSION);
 
@@ -69,14 +64,11 @@ status_version_bind(TASK *t)
 }
 /*--- status_version_bind() ---------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	STATUS_VERSION_MYDNS
-	Respond to 'version.mydns.' query.
-**************************************************************************************************/
-static int
-status_version_mydns(TASK *t)
-{
+ STATUS_VERSION_MYDNS
+ Respond to 'version.mydns.' query.
+ **************************************************************************************************/
+static int status_version_mydns(TASK *t) {
 	time_t uptime = time(NULL) - Status.start_time;
 	unsigned long requests = Status.udp_requests + Status.tcp_requests;
 	int n;
@@ -87,7 +79,8 @@ status_version_mydns(TASK *t)
 	/* Now add some extra stuff in ADDITIONAL section */
 
 	/* Package release date */
-	status_fake_rr(t, ADDITIONAL, "release-date.mydns.", "%s", PACKAGE_RELEASE_DATE);
+	status_fake_rr(t, ADDITIONAL, "release-date.mydns.", "%s",
+			PACKAGE_RELEASE_DATE);
 
 	/* Current uptime */
 	status_fake_rr(t, ADDITIONAL, "uptime.mydns.", "%s", strsecs(uptime));
@@ -96,19 +89,21 @@ status_version_mydns(TASK *t)
 	status_fake_rr(t, ADDITIONAL, "requests.mydns.", "%lu", requests);
 
 	/* Request rate */
-	status_fake_rr(t, ADDITIONAL, "request.rate.mydns.", "%.0f/s", requests ? AVG(requests, uptime) : 0.0);
+	status_fake_rr(t, ADDITIONAL, "request.rate.mydns.", "%.0f/s",
+			requests ? AVG(requests, uptime) : 0.0);
 
 	/* Report TCP requests if server allows TCP */
 	if (Status.tcp_requests)
-		status_fake_rr(t, ADDITIONAL, "tcp.requests.mydns.", "%lu", Status.tcp_requests);
+		status_fake_rr(t, ADDITIONAL, "tcp.requests.mydns.", "%lu",
+				Status.tcp_requests);
 
 	/* Result status */
 	for (n = 0; n < MAX_RESULTS; n++)
-		if (Status.results[n])
-		{
+		if (Status.results[n]) {
 			char namebuf[80];
 
-			snprintf(namebuf, sizeof(namebuf), "results.%s.mydns.", mydns_rcode_str(n));
+			snprintf(namebuf, sizeof(namebuf), "results.%s.mydns.",
+					mydns_rcode_str(n));
 			status_fake_rr(t, ADDITIONAL, namebuf, "%u", Status.results[n]);
 		}
 
@@ -116,14 +111,11 @@ status_version_mydns(TASK *t)
 }
 /*--- status_version_mydns() --------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	STATUS_ID_SERVER
-	Respond to 'id.server.' query.
-**************************************************************************************************/
-static int
-status_id_server(TASK *t)
-{
+ STATUS_ID_SERVER
+ Respond to 'id.server.' query.
+ **************************************************************************************************/
+static int status_id_server(TASK *t) {
 	/* Generate fake TXT rr with version number and add to reply list */
 	status_fake_rr(t, ANSWER, t->qname, "%s", server_id);
 
@@ -131,13 +123,10 @@ status_id_server(TASK *t)
 }
 /*--- status_id_server() ---------------------------------------------------------------------*/
 
-
 /**************************************************************************************************
-	REMOTE_STATUS
-**************************************************************************************************/
-int
-remote_status(TASK *t)
-{
+ REMOTE_STATUS
+ **************************************************************************************************/
+int remote_status(TASK *t) {
 	if (t->qtype != DNS_QTYPE_TXT && t->qtype != DNS_QTYPE_ANY)
 		return formerr(t, DNS_RCODE_NOTIMP, ERR_NO_CLASS, NULL);
 
