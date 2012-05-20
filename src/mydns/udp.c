@@ -105,7 +105,7 @@ write_udp_reply(TASK *t)
 
 	/* Task complete; dequeue */
 #if DEBUG_ENABLED && DEBUG_UDP
-	Debug("%s: WRITE %u UDP octets (id %u)", desctask(t), t->replylen, t->id);
+	Debug("%s: WRITE %zu UDP octets (id %u)", desctask(t), t->replylen, t->id);
 #endif
 	return dequeue(Tasks, t);
 }
