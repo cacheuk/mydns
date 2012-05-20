@@ -32,10 +32,10 @@
 void
 tsig_dump(char *desctask, TSIG *s)
 {
-	Debug("%s: TSIG DUMP: algorithm=[%s] timesigned=[%lld] fudge=[%d] macsize=[%d] mac=[%s] originalid=[%d] error=[%d] otherlen=[%d] other=[%s]",
+	Debug("%s: TSIG DUMP: algorithm=[%s] timesigned=[%"PRId64"] fudge=[%d] macsize=[%d] mac=[%s] originalid=[%d] error=[%d] otherlen=[%d] other=[%s]",
            desctask,
            s->algorithm, 
-           s->timesigned, 
+           s->timesigned,
            s->fudge, 
            s->macsize, 
            hex((char *)s->mac, s->macsize),
