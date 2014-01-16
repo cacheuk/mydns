@@ -1042,6 +1042,30 @@ static inline int reply_add_nsec(TASK *t, RR *r) {
 	return -1;
 }
 
+static inline int reply_add_nsec3(TASK *t, RR *r) {
+	MYDNS_RR *rr = (MYDNS_RR *) r->rr;
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN NSEC3", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_NSEC3, rr->ttl, "NSEC3") < 0)
+		return (-1);
+
+	return -1;
+}
+
+static inline int reply_add_nsec3param(TASK *t, RR *r) {
+	MYDNS_RR *rr = (MYDNS_RR *) r->rr;
+#if DEBUG_ENABLED && DEBUG_REPLY
+	Debug("%s: REPLY_ADD: `%s' IN NSEC3PARAM", desctask(t), r->name);
+#endif
+
+	if (reply_start_rr(t, r, r->name, DNS_QTYPE_NSEC3PARAM, rr->ttl, "NSEC3PARAM") < 0)
+		return (-1);
+
+	return -1;
+}
+
 static inline int reply_add_ds(TASK *t, RR *r) {
 	MYDNS_RR *rr = (MYDNS_RR *) r->rr;
 #if DEBUG_ENABLED && DEBUG_REPLY
@@ -1288,6 +1312,16 @@ static int reply_process_rrlist(TASK *t, RRLIST *rrlist) {
 
 			case DNS_QTYPE_NSEC:
 				if (reply_add_nsec(t, r) < 0)
+					return (-1);
+				break;
+
+			case DNS_QTYPE_NSEC3:
+				if (reply_add_nsec3(t, r) < 0)
+					return (-1);
+				break;
+
+			case DNS_QTYPE_NSEC3PARAM:
+				if (reply_add_nsec3param(t, r) < 0)
 					return (-1);
 				break;
 
