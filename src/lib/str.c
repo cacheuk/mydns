@@ -147,6 +147,10 @@ char *mydns_qtype_str(dns_qtype_t qtype) {
 		return ("RRSIG");
 	case DNS_QTYPE_NSEC:
 		return ("NSEC");
+	case DNS_QTYPE_NSEC3:
+		return ("NSEC3");
+	case DNS_QTYPE_NSEC3PARAM:
+		return ("NSEC3PARAM");
 	case DNS_QTYPE_DNSKEY:
 		return ("DNSKEY");
 	case DNS_QTYPE_SPF:
