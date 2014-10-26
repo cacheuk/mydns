@@ -238,8 +238,12 @@ static void axfr_zone(TASK *t, MYDNS_SOA *soa) {
 
 #if ALIAS_ENABLED
 				/* If we have been compiled with alias support and the current record is an alias pass it to alias_recurse() */
-				if (rr->alias != 0)
+				if (rr->alias != 0){
+					t->qtype = DNS_QTYPE_A;
 					alias_recurse(t, ANSWER, rr->name, soa, NULL, rr);
+					t->qtype = DNS_QTYPE_AAAA;
+					alias_recurse(t, ANSWER, rr->name, soa, NULL, rr);
+				}
 				else
 #endif
 					rrlist_add(t, ANSWER, DNS_RRTYPE_RR, (void *) rr, rr->name);
