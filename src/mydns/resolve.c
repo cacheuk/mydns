@@ -357,6 +357,7 @@ static int resolve_label(TASK *t, datasection_t section, dns_qtype_t qtype,
 		rv = process_rr(t, section, qtype, fqdn, soa, label, rr, level);
 		mydns_rr_free(rr);
 		add_authority_ns(t, section, soa, label);
+		t->hdr.aa = 0;
 		return (rv);
 	}
 
