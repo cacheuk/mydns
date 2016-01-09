@@ -116,6 +116,11 @@ inline dns_qtype_t mydns_rr_get_type(char *type) {
 			return DNS_QTYPE_NS;
 		if (type[1] == 'S' && type[2] == 'E' && type[3] == 'C' && !type[4])
 			return DNS_QTYPE_NSEC;
+		if (type[1] == 'S' && type[2] == 'E' && type[3] == 'C' && type[4] == '3' && !type[5])
+			return DNS_QTYPE_NSEC3;
+		if (type[1] == 'S' && type[2] == 'E' && type[3] == 'C' && type[4] == '3' && type[5] == 'P'
+				&& type[6] == 'A' && type[7] == 'R' && type[8] == 'A' && type[9] == 'M' && !type[10])
+			return DNS_QTYPE_NSEC3PARAM;
 		if (type[1] == 'A' && type[2] == 'P' && type[3] == 'T' && type[4] == 'R'
 				&& !type[5])
 			return DNS_QTYPE_NAPTR;
