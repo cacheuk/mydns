@@ -520,6 +520,12 @@ int mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 	case DNS_QTYPE_CNAME:
 		wheretype = " AND type='CNAME'";
 		break;
+	case DNS_QTYPE_DNSKEY:
+		wheretype = " AND type='DNSKEY'";
+		break;
+	case DNS_QTYPE_DS:
+		wheretype = " AND type='DS'";
+		break;
 	case DNS_QTYPE_HINFO:
 		wheretype = " AND type='HINFO'";
 		break;
@@ -528,6 +534,15 @@ int mydns_rr_load(SQL *sqlConn, MYDNS_RR **rptr, uint32_t zone,
 		break;
 	case DNS_QTYPE_NAPTR:
 		wheretype = " AND type='NAPTR'";
+		break;
+	case DNS_QTYPE_NSEC:
+		wheretype = " AND type='NSEC'";
+		break;
+	case DNS_QTYPE_NSEC3:
+		wheretype = " AND type='NSEC3'";
+		break;
+	case DNS_QTYPE_NSEC3PARAM:
+		wheretype = " AND type='NSEC3PARAM'";
 		break;
 	case DNS_QTYPE_NS:
 		wheretype = " AND type='NS'";
