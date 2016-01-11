@@ -266,7 +266,7 @@ typedef enum /* Query types */
 	DNS_QTYPE_RESERVED = 65535, /* Reserved */
 
 #if ALIAS_ENABLED
-	DNS_QTYPE_ALIAS = 500, /* Extension - David Phillips, alias patch */
+	DNS_QTYPE_ALIAS = 65280, /* Extension - David Phillips, alias patch */
 #endif
 } dns_qtype_t;
 
