@@ -223,16 +223,16 @@ typedef enum /* Query types */
 	DNS_QTYPE_NSEC = 47, /* DNSSEC */
 	DNS_QTYPE_DNSKEY = 48, /* DNSSEC */
 	DNS_QTYPE_DHCID	= 49, /* DHCID */
-	DNS_QTYPE_NSEC3 = 50,  /* DNSSEC */
-	DNS_QTYPE_NSEC3PARAM = 51,  /* DNSSEC */
+	DNS_QTYPE_NSEC3 = 50, /* DNSSEC */
+	DNS_QTYPE_NSEC3PARAM = 51, /* DNSSEC */
 	DNS_QTYPE_TLSA = 52, /* [RFC6698] */
 	DNS_QTYPE_SMIMEA = 53, /* S/MIME cert association	[draft-ietf-dane-smime] */
 	/* Unassigned 54 */
 	DNS_QTYPE_HIP = 55, /* Host Identity Protocol [RFC5205] */
-	DNS_QTYPE_NINFO = 56, /* NINFO	[Jim_Reid] */
-	DNS_QTYPE_RKEY = 57, /* RKEY	[Jim_Reid] */
+	DNS_QTYPE_NINFO = 56, /* NINFO [Jim_Reid] */
+	DNS_QTYPE_RKEY = 57, /* RKEY [Jim_Reid] */
 	DNS_QTYPE_TALINK = 58, /* Trust Anchor LINK [Wouter_Wijngaards] */
-	DNS_QTYPE_CDS = 59, /* Child DS	[RFC7344] CDS */
+	DNS_QTYPE_CDS = 59, /* Child DS [RFC7344] CDS */
 	DNS_QTYPE_CDNSKEY = 60, /* DNSKEY(s) the Child wants reflected in DS [RFC7344] */
 	DNS_QTYPE_OPENPGPKEY = 61, /* OpenPGP Key [draft-ietf-dane-openpgpkey] */
 	DNS_QTYPE_CSYNC = 62, /* Child-To-Parent Synchronization [RFC7477] */
