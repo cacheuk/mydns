@@ -222,16 +222,48 @@ typedef enum /* Query types */
 	DNS_QTYPE_RRSIG = 46, /* DNSSEC */
 	DNS_QTYPE_NSEC = 47, /* DNSSEC */
 	DNS_QTYPE_DNSKEY = 48, /* DNSSEC */
-	/* 49 ? */
+	DNS_QTYPE_DHCID	= 49, /* DHCID */
 	DNS_QTYPE_NSEC3 = 50,  /* DNSSEC */
 	DNS_QTYPE_NSEC3PARAM = 51,  /* DNSSEC */
-	DNS_QTYPE_SPF = 99, /* SPF */
-	DNS_QTYPE_TSIG = 250, /* Transaction signature */
-	DNS_QTYPE_IXFR = 251, /* Incremental zone transfer */
-	DNS_QTYPE_AXFR = 252, /* Zone transfer */
+	DNS_QTYPE_TLSA = 52, /* [RFC6698] */
+	DNS_QTYPE_SMIMEA = 53, /* S/MIME cert association	[draft-ietf-dane-smime] */
+	/* Unassigned 54 */
+	DNS_QTYPE_HIP = 55, /* Host Identity Protocol [RFC5205] */
+	DNS_QTYPE_NINFO = 56, /* NINFO	[Jim_Reid] */
+	DNS_QTYPE_RKEY = 57, /* RKEY	[Jim_Reid] */
+	DNS_QTYPE_TALINK = 58, /* Trust Anchor LINK [Wouter_Wijngaards] */
+	DNS_QTYPE_CDS = 59, /* Child DS	[RFC7344] CDS */
+	DNS_QTYPE_CDNSKEY = 60, /* DNSKEY(s) the Child wants reflected in DS [RFC7344] */
+	DNS_QTYPE_OPENPGPKEY = 61, /* OpenPGP Key [draft-ietf-dane-openpgpkey] */
+	DNS_QTYPE_CSYNC = 62, /* Child-To-Parent Synchronization [RFC7477] */
+	/* Unassigned 63-98 */
+	DNS_QTYPE_SPF = 99, /* SPF [RFC7208] */
+	DNS_QTYPE_UINFO = 100, /* [IANA-Reserved] */
+	DNS_QTYPE_UID = 101, /* [IANA-Reserved] */
+	DNS_QTYPE_GID = 102, /* [IANA-Reserved] */
+	DNS_QTYPE_UNSPEC = 103, /* [IANA-Reserved] */
+	DNS_QTYPE_NID = 104, /* [RFC6742] */
+	DNS_QTYPE_L32 = 105, /* [RFC6742] */
+	DNS_QTYPE_L64 = 106, /* [RFC6742] */
+	DNS_QTYPE_LP = 107, /* [RFC6742] */
+	DNS_QTYPE_EUI48 = 108, /* an EUI-48 address [RFC7043] */
+	DNS_QTYPE_EUI64 = 109, /* an EUI-64 address [RFC7043] */
+	/* Unassigned 110-248 */
+	DNS_QTYPE_TKEY = 249, /* Transaction Key [RFC2930] */
+	DNS_QTYPE_TSIG = 250, /* Transaction Signature [RFC2845] */
+	DNS_QTYPE_IXFR = 251, /* incremental transfer [RFC1995] */
+	DNS_QTYPE_AXFR = 252, /* Zone transfer of an entire zone [RFC1035][RFC5936]*/
 	DNS_QTYPE_MAILB = 253, /* Transfer mailbox records */
-	DNS_QTYPE_MAILA = 254, /* Transfer mail agent records */
-	DNS_QTYPE_ANY = 255, /* Any */
+	DNS_QTYPE_MAILA = 254, /* Transfer mail agent records (OBSOLETE - see MX) [RFC1035] */
+	DNS_QTYPE_ANY = 255, /* Any - A request for all records the server/cache has available [RFC1035][RFC6895] */
+	DNS_QTYPE_URI = 256, /* URI [RFC7553] */
+	DNS_QTYPE_CAA = 257, /* Certification Authority Restriction [RFC6844] */
+	/* Unassigned 258-32767 */
+	DNS_QTYPE_TA = 32768, /* DNSSEC Trust Authorities [Sam_Weiler][http://cameo.library.cmu.edu/][ Deploying DNSSEC Without a Signed Root. Technical Report 1999-19, Information Networking Institute, Carnegie Mellon University, April 2004.] */
+	DNS_QTYPE_DLV = 32769, /* DNSSEC Lookaside Validation [RFC4431] */
+	/* Unassigned 32770-65279 */
+	/* Private use 65280-65534 */
+	DNS_QTYPE_RESERVED = 65535, /* Reserved */
 
 #if ALIAS_ENABLED
 	DNS_QTYPE_ALIAS = 500, /* Extension - David Phillips, alias patch */
