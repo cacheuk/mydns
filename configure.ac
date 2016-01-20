@@ -23,6 +23,18 @@ AC_PREREQ([2.59])
 AC_COPYRIGHT([Portions of this script are Copyright 2002-2005 Don Moore])
 AM_INIT_AUTOMAKE([1.9.5 dist-bzip2])
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_FILES([	\
+				intl/Makefile \
+				po/Makefile.in \
+				m4/Makefile \
+				Makefile \
+				lib/Makefile \
+				src/Makefile \
+					src/lib/Makefile \
+					src/mydns/Makefile \
+					src/util/Makefile \
+				 ])
 
 ## Checks for programs
 AC_PROG_AWK
@@ -93,19 +105,7 @@ AC_ENABLE_STATUS				#	Enable the STATUS opcode to check server status
 AC_DISABLE_DATE_LOGGING		#	Disable date/time in verbose output?
 AC_MYDNS_VARS					#  Set variables containing dirs
 
-AC_OUTPUT(	contrib/Makefile \
-				intl/Makefile \
-				po/Makefile.in \
-				m4/Makefile \
-				Makefile \
-				lib/Makefile \
-				src/Makefile \
-					src/lib/Makefile \
-					src/mydns/Makefile \
-					src/util/Makefile \
-				pkg/Makefile \
-				doc/Makefile
-			)
+AC_OUTPUT([])
 
 echo
 echo "  ###"
