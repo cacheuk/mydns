@@ -2,7 +2,7 @@
 ## $Id: Makefile.am,v 1.48 2006/01/18 22:02:16 bboy Exp $
 ##
 
-SUBDIRS				=	pkg contrib intl po m4 doc lib src
+SUBDIRS				=	intl po m4 lib src
 
 SEDFILE				=	version.sed
 ACLOCAL_AMFLAGS	=	-I m4
