@@ -318,7 +318,7 @@ static int resolve_label(TASK *t, datasection_t section, dns_qtype_t qtype,
 	/* Do any records match this label exactly? */
 	/* Only check this if the label is the first in the list */
 	if (full_match) {
-		if ((rr = find_rr(t, soa, qtype, label))) {
+		if ((rr = find_rr(t, soa, DNS_QTYPE_ANY, label))) {
 			rv = process_rr(t, section, qtype, fqdn, soa, label, rr, level);
 			mydns_rr_free(rr);
 			add_authority_ns(t, section, soa, label);
