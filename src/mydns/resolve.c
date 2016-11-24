@@ -143,7 +143,7 @@ static int process_rr(TASK *t, datasection_t section, dns_qtype_t qtype,
 	/* If the data section calls for a FQDN, and we just get a hostname, append the origin */
 	for (r = rr; r; r = r->next)
 		if (r->type == DNS_QTYPE_NS || r->type == DNS_QTYPE_CNAME
-				|| r->type == DNS_QTYPE_MX) {
+				|| r->type == DNS_QTYPE_MX || r->type == DNS_QTYPE_PTR) {
 			register int len = strlen(r->data);
 
 			if (r->data[len - 1] == '.')
