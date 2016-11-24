@@ -368,6 +368,7 @@ inline MYDNS_RR *mydns_rr_parse(SQL_ROW row, const char *origin, dns_qtype_t typ
 			case DNS_QTYPE_CNAME:
 			case DNS_QTYPE_MX:
 			case DNS_QTYPE_NS:
+			case DNS_QTYPE_PTR:
 			case DNS_QTYPE_RP:
 			case DNS_QTYPE_SRV: {
 				int namelen = strlen(rr->data);
