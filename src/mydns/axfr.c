@@ -312,6 +312,7 @@ void axfr(TASK *t) {
 
 	/* Get SOA for zone */
 	soa = axfr_get_soa(t);
+	t->minimum_ttl = soa->minimum;
 
 	/* Transfer that zone */
 	axfr_zone(t, soa);
