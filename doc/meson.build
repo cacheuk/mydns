@@ -1,5 +1,4 @@
 # doc/meson.build
-project('mydns_doc', 'c') # Subproject name
 
 # Man pages
 # man_MANS = mydns.8 mydnscheck.8 mydns.conf.5 mydns-conf.8 mydnsexport.8 mydnsimport.8 mydnsptrconvert.8

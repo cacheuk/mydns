@@ -1,6 +1,5 @@
 # src/mydns/meson.build
 
-project('mydns_server', 'c')
 cc = meson.get_compiler('c')
 
 # Dependencies from the main project

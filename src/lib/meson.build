@@ -5,7 +5,6 @@
 # noinst_HEADERS were bits.h header.h mydns.h
 # libmydns_a_SOURCES were ip.c question.c rr.c soa.c sql.c str.c unencode.c key.c
 
-project('mydnslib', 'c') # Subproject name
 cc = meson.get_compiler('c')
 
 # @UTILINCLUDE@ means it needs headers from ../../lib

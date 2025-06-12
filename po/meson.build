@@ -1,5 +1,4 @@
 # po/meson.build
-project('mydns_po', 'c') # Subproject name for clarity
 
 # Use Meson's internationalization module
 i18n = import('i18n')

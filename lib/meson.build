@@ -6,7 +6,6 @@
 # libmydnsutil_a_SOURCES were alloca.c cidr.c conf.c error.c getopt.c getopt1.c getoptstr.c inet_pton.c inet_ntop.c ip.c passinput.c string.c strsep.c strsep_quotes.c wildcard.c
 # libmydnsutil_a_LIBADD was @ALLOCA@
 
-project('mydnsutil', 'c') # Subproject name for clarity
 cc = meson.get_compiler('c')
 
 # Get dependencies from the main project if they were declared with subproject_variable_name
