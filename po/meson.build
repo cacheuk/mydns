@@ -50,7 +50,7 @@ languages = ['es', 'fr', 'pt_BR']
 # Generate .po files from .pot (if needed, typically .po are maintained by translators)
 # And compile .po files to .mo files
 i18n.gettext(package_name,
-  pot_sources,
+  args: pot_sources,
   preset: 'gnu', # Use gnu gettext conventions
   languages: languages,
   install: true
