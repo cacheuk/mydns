@@ -68,6 +68,7 @@ doc_conf_data.set_quoted('PACKAGE_STRING', 'mydns 1.1.0') # Root project's strin
 doc_conf_data.set_quoted('PACKAGE_AUTHOR', 'Don Moore <bboy@bboy.net>')
 doc_conf_data.set_quoted('PACKAGE_BUGREPORT', 'bboy@bboy.net')
 doc_conf_data.set_quoted('PACKAGE_URL', 'http://mydns.bboy.net') # Corrected from HOMEPAGE
+doc_conf_data.set_quoted('PACKAGE_HOMEPAGE', 'http://mydns.bboy.net')
 doc_conf_data.set_quoted('PACKAGE_COPYRIGHT', 'Copyright (C) 2002-2005 Don Moore')
 
 
@@ -88,7 +89,7 @@ foreach idx : range(man_pages_in.length())
   man_out_filename = man_pages_out[idx]
 
   # Check if the .in file exists before trying to configure it
-  if run_command('test', '-f', files(man_in_filename)[0]).returncode() != 0
+  if run_command('test', '-f', man_in_filename).returncode() != 0
     message('Man page source file ' + man_in_filename + ' not found. Skipping.')
     continue
   endif
@@ -110,7 +111,7 @@ endforeach
 # This file typically contains @set PACKAGE_VERSION ... etc.
 configured_version_texi = ''
 version_texi_in_path = 'version.texi.in'
-if run_command('test', '-f', files(version_texi_in_path)[0]).returncode() == 0
+if run_command('test', '-f', version_texi_in_path).returncode() == 0
   configured_version_texi = configure_file(
     input: version_texi_in_path,
     output: 'version.texi', # This will be in the build directory
@@ -120,7 +121,7 @@ if run_command('test', '-f', files(version_texi_in_path)[0]).returncode() == 0
 else
   message('File "version.texi.in" not found. Texinfo output might not have correct version info unless "version.texi" is already correct or mydns.texi does not rely on it for version macros.')
   # If version.texi.in doesn't exist, but version.texi does, we use the existing one.
-  if run_command('test', '-f', files('version.texi')[0]).returncode() == 0
+  if run_command('test', '-f', 'version.texi').returncode() == 0
      configured_version_texi = files('version.texi')[0] # Use existing source file
   else
      configured_version_texi = '' # No version.texi available
@@ -129,7 +130,7 @@ endif
 
 # Find makeinfo
 makeinfo = find_program('makeinfo', required : false)
-if makeinfo.found() and run_command('test', '-f', files(texinfo_main_file)[0]).returncode() == 0
+if makeinfo.found() and run_command('test', '-f', texinfo_main_file).returncode() == 0
   # Ensure the main texi file exists
 
   # Define dependencies for the custom target.
@@ -140,7 +141,7 @@ if makeinfo.found() and run_command('test', '-f', files(texinfo_main_file)[0]).r
     if src_file == 'version.texi' and configured_version_texi != '' and configured_version_texi != files('version.texi')[0]
       # If version.texi was generated from version.texi.in, depend on the generated one.
       current_texinfo_deps += configured_version_texi
-    elif run_command('test', '-f', files(src_file)[0]).returncode() == 0
+    elif run_command('test', '-f', src_file).returncode() == 0
       current_texinfo_deps += files(src_file) # Depend on existing source file
     endif
   endforeach
