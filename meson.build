@@ -256,14 +256,22 @@ foreach name, info : decls_to_check_map
 endforeach
 
 # Other options from configure.ac
-conf_data.set('ENABLE_ALIAS', 1 if get_option('enable-alias') else 0)
-conf_data.set('ENABLE_STATIC_BUILD', 1 if get_option('enable-static-build') else 0)
-conf_data.set('ENABLE_PROFILING', 1 if get_option('enable-profiling') else 0)
-conf_data.set('ENABLE_DEBUG', 1 if get_option('enable-debug') else 0)
-conf_data.set('ENABLE_VALGRIND', 1 if get_option('enable-valgrind') else 0)
-conf_data.set('ENABLE_STRICT', 1 if get_option('enable-strict') else 0)
-conf_data.set('ENABLE_STATUS', 1 if get_option('enable-status') else 0)
-conf_data.set('DISABLE_DATE_LOGGING', 1 if get_option('disable-date-logging') else 0)
+enable_alias_val = 1 if get_option('enable-alias') else 0
+conf_data.set('ENABLE_ALIAS', enable_alias_val)
+enable_static_build_val = 1 if get_option('enable-static-build') else 0
+conf_data.set('ENABLE_STATIC_BUILD', enable_static_build_val)
+enable_profiling_val = 1 if get_option('enable-profiling') else 0
+conf_data.set('ENABLE_PROFILING', enable_profiling_val)
+enable_debug_val = 1 if get_option('enable-debug') else 0
+conf_data.set('ENABLE_DEBUG', enable_debug_val)
+enable_valgrind_val = 1 if get_option('enable-valgrind') else 0
+conf_data.set('ENABLE_VALGRIND', enable_valgrind_val)
+enable_strict_val = 1 if get_option('enable-strict') else 0
+conf_data.set('ENABLE_STRICT', enable_strict_val)
+enable_status_val = 1 if get_option('enable-status') else 0
+conf_data.set('ENABLE_STATUS', enable_status_val)
+disable_date_logging_val = 1 if get_option('disable-date-logging') else 0
+conf_data.set('DISABLE_DATE_LOGGING', disable_date_logging_val)
 
 # Apply compiler flags based on options
 if get_option('enable-profiling')
