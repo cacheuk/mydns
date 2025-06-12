@@ -109,19 +109,20 @@ endforeach
 
 # Configure version.texi if version.texi.in exists
 # This file typically contains @set PACKAGE_VERSION ... etc.
-configured_version_texi = ''
+version_texi_was_configured = false
+configured_version_texi_obj = '' # To store the File object for version.texi.built
 version_texi_in_path = 'version.texi.in'
+
 if run_command('test', '-f', version_texi_in_path).returncode() == 0
-  configured_version_texi = configure_file(
+  configured_version_texi_obj = configure_file(
     input: version_texi_in_path,
-    output: 'version.texi', # This will be in the build directory
+    output: 'version.texi.built', # Outputting to .built
     configuration: doc_conf_data
   )
-  message('Configured version.texi from version.texi.in')
+  version_texi_was_configured = true
+  message('Configured version.texi from version.texi.in to version.texi.built')
 else
-  message('File "version.texi.in" not found. Texinfo output might not have correct version info unless "version.texi" (source) is already correct or mydns.texi does not rely on it for version macros.')
-  # If version.texi.in doesn't exist, configured_version_texi remains ''.
-  # The source 'version.texi' will be handled in the loop that populates current_texinfo_deps.
+  message('File "version.texi.in" not found. Source "version.texi" will be used if available.')
 endif
 
 # Find makeinfo
@@ -135,11 +136,23 @@ if makeinfo.found() and run_command('test', '-f', texinfo_main_file).returncode(
   current_texinfo_deps = []
   foreach src_file_str : texinfo_sources
     if src_file_str == 'version.texi'
-      if configured_version_texi != ''
-        # If version.texi was built from version.texi.in, use the built version
-        current_texinfo_deps += configured_version_texi
+      if version_texi_was_configured
+        # version.texi.in was configured to version.texi.built (pointed to by configured_version_texi_obj)
+        # Makeinfo needs to include a file named 'version.texi'.
+        # So, create a target that copies version.texi.built to version.texi in the build dir.
+        copied_target_version_texi = custom_target(
+          'generated_version_texi_for_makeinfo', # Unique target name
+          input: configured_version_texi_obj,     # Input is version.texi.built
+          output: 'version.texi',               # Output is version.texi (in build dir)
+          command: ['cp', '@INPUT@', '@OUTPUT@'],
+          # build_by_default: true, # Not strictly needed if mydns_info depends on it
+                                    # but ensures it's part of the build graph early.
+                                    # Let's make it explicit if it helps Meson's planning.
+          build_by_default: true
+        )
+        current_texinfo_deps += copied_target_version_texi # mydns_info depends on the copied version.texi
       else
-        # If not built from .in, check for source version.texi and use if it exists
+        # version.texi.in was not found/configured. Use source version.texi if it exists.
         if run_command('test', '-f', 'version.texi').returncode() == 0
           current_texinfo_deps += files('version.texi') # Add source version.texi
         endif
