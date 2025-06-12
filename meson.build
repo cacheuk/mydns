@@ -331,7 +331,7 @@ configure_file(input: 'config.h.in', output : 'config.h', configuration : conf_d
 # These need to be defined after all global project arguments and conf_data are set.
 # Dependencies like db_dep, openssl_dep, gettext_dep need to be passed or available globally if used in subdirs.
 global_project_deps = declare_dependency(
-  dependencies: [db_dep, openssl_dep, gettext_dep],
+  dependencies: [db_dep, openssl_dep, final_gettext_dep],
   # include_directories: include_directories('.') # if config.h is needed by subprojects directly
 )
 
