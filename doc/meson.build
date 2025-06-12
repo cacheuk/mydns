@@ -119,13 +119,9 @@ if run_command('test', '-f', version_texi_in_path).returncode() == 0
   )
   message('Configured version.texi from version.texi.in')
 else
-  message('File "version.texi.in" not found. Texinfo output might not have correct version info unless "version.texi" is already correct or mydns.texi does not rely on it for version macros.')
-  # If version.texi.in doesn't exist, but version.texi does, we use the existing one.
-  if run_command('test', '-f', 'version.texi').returncode() == 0
-     configured_version_texi = files('version.texi')[0] # Use existing source file
-  else
-     configured_version_texi = '' # No version.texi available
-  endif
+  message('File "version.texi.in" not found. Texinfo output might not have correct version info unless "version.texi" (source) is already correct or mydns.texi does not rely on it for version macros.')
+  # If version.texi.in doesn't exist, configured_version_texi remains ''.
+  # The source 'version.texi' will be handled in the loop that populates current_texinfo_deps.
 endif
 
 # Find makeinfo
@@ -140,9 +136,16 @@ if makeinfo.found() and run_command('test', '-f', texinfo_main_file).returncode(
   foreach src_file_str : texinfo_sources
     if src_file_str == 'version.texi'
       if configured_version_texi != ''
+        # If version.texi was built from version.texi.in, use the built version
         current_texinfo_deps += configured_version_texi
+      else
+        # If not built from .in, check for source version.texi and use if it exists
+        if run_command('test', '-f', 'version.texi').returncode() == 0
+          current_texinfo_deps += files('version.texi') # Add source version.texi
+        endif
       endif
     else
+      # For other files (e.g., configuration.texi)
       if run_command('test', '-f', src_file_str).returncode() == 0
         current_texinfo_deps += files(src_file_str)
       endif
