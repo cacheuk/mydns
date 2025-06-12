@@ -210,15 +210,29 @@ foreach f : funcs_to_check
 endforeach
 
 # AC_FUNC_ALLOCA
-has_alloca_h = cc.has_header('alloca.h')
-conf_data.set('HAVE_ALLOCA_H', 1 if has_alloca_h else 0)
-if cc.has_function('alloca')
-    conf_data.set('HAVE_ALLOCA', 1)
-elif cc.has_function('_alloca') # Check for _alloca if alloca is not found
-    conf_data.set('HAVE_ALLOCA', 1) # Standard config.h uses HAVE_ALLOCA for this
-    conf_data.set('C_ALLOCA', 1)    # Define C_ALLOCA as per Autoconf tradition for MSVC-like compilers
+has_alloca_h_check = cc.has_header('alloca.h')
+if has_alloca_h_check
+  conf_data.set('HAVE_ALLOCA_H', 1)
 else
-    conf_data.set('HAVE_ALLOCA', 0)
+  conf_data.set('HAVE_ALLOCA_H', 0)
+endif
+
+if cc.has_function('alloca')
+  conf_data.set('HAVE_ALLOCA', 1)
+elif cc.has_function('_alloca')
+  conf_data.set('HAVE__ALLOCA', 1) # Windows specific
+  conf_data.set('HAVE_ALLOCA', 0) # Ensure Autoconf's HAVE_ALLOCA is not set if only _alloca found
+else
+  # If neither alloca nor _alloca is found as a function,
+  # Autoconf would then typically check if alloca.c (if provided) works or if alloca is in libc.
+  # The original Makefile.am for libmydnsutil.a lists alloca.c in its sources.
+  # If alloca.c is compiled into libmydnsutil, then code using alloca() would link.
+  # For config.h, HAVE_ALLOCA should reflect if a usable alloca is expected.
+  # If alloca.c is part of the sources and provides alloca(), then this should be 1.
+  # Meson doesn't automatically infer this for config.h from source files.
+  # For now, set HAVE_ALLOCA based on function check only, matching the previous logic more directly.
+  # If alloca.c is meant to be a fallback, specific code usually checks #ifdef HAVE_ALLOCA.
+  conf_data.set('HAVE_ALLOCA', 0)
 endif
 
 # Declarations (from AC_CHECK_DECLS) using cc.compiles
