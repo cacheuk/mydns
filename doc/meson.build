@@ -137,18 +137,15 @@ if makeinfo.found() and run_command('test', '-f', texinfo_main_file).returncode(
   # If version.texi was configured, it's a generated file (in build dir).
   # Other texi files are sources.
   current_texinfo_deps = []
-  foreach src_file_str : texinfo_sources # Renamed loop variable for clarity
-    if src_file_str == 'version.texi':
-      if configured_version_texi != '': # Check if configured_version_texi is a valid File object
+  foreach src_file_str : texinfo_sources
+    if src_file_str == 'version.texi'
+      if configured_version_texi != ''
         current_texinfo_deps += configured_version_texi
-      # If configured_version_texi is '', 'version.texi' is not added as a dependency here.
-      # This assumes that if 'version.texi' (source) was to be used,
-      # configured_version_texi would have been set to files('version.texi')[0].
-    else: # For other files in texinfo_sources (e.g., 'mydns.texi', 'configuration.texi')
-      # Check if the source file itself exists before adding it as a dependency
-      if run_command('test', '-f', src_file_str).returncode() == 0:
+      endif
+    else
+      if run_command('test', '-f', src_file_str).returncode() == 0
         current_texinfo_deps += files(src_file_str)
-      # If the file (e.g. a commented out 'texinfo.tex') doesn't exist, it's simply not added.
+      endif
     endif
   endforeach
 
