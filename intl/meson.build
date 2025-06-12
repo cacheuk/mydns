@@ -1,5 +1,4 @@
 # intl/meson.build
-project('mydns_intl_fallback', 'c')
 cc = meson.get_compiler('c')
 
 # This option is defined in the root meson_options.txt
