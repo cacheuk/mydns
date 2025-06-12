@@ -338,11 +338,11 @@ global_project_deps = declare_dependency(
 # subdir('intl') # Internationalization stuff -- This call was moved to the gettext block above.
 subdir('po')   # Localization files
 subdir('lib')  # Processes lib/meson.build. This makes 'libmydnsutil' available via meson.override_dependency().
-libmydnsutil_dep = dependency('libmydnsutil', internal: true) # Now it can be resolved.
+libmydnsutil_dep = dependency('libmydnsutil') # Now it can be resolved.
 
 # Process src/lib before src
 subdir('src/lib') # Processes src/lib/meson.build. This makes 'libmydns' available.
-lib_mydns_dep = dependency('libmydns', internal: true) # Now it can be resolved.
+lib_mydns_dep = dependency('libmydns') # Now it can be resolved.
 
 # src subdir depends on libmydnsutil_dep and lib_mydns_dep.
 # These dependencies will be available to src/meson.build
