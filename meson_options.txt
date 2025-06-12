@@ -1,4 +1,3 @@
-option('sysconfdir', type: 'string', value: '/etc', description: 'Directory for configuration files like mydns.conf')
 option('enable-mysql', type : 'boolean', value : false, description : 'Enable MySQL support (requires mysqlclient headers/libs)')
 option('enable-pgsql', type : 'boolean', value : false, description : 'Enable PostgreSQL support (requires libpq headers/libs)')
 option('with-openssl', type : 'boolean', value : true, description : 'Build with OpenSSL support')
