@@ -241,7 +241,7 @@ decls_to_check_map = {
   'strcoll': ['#include <string.h>', 'int r = strcoll("a", "b");'],
   'strerror': ['#include <string.h>', 'char *s = strerror(0);'],
   'strncasecmp': ['#include <strings.h>', 'int r = strncasecmp("a", "b", 1);'],
-  'strsep': ['#include <string.h>', 'char actual_s[] = "test,string"; char *s_ptr = actual_s; char *p = strsep(&s_ptr, ",");'] // Initialized s, cast to char*
+  'strsep': ['#include <string.h>', 'char actual_s[] = "test,string"; char *s_ptr = actual_s; char *p = strsep(&s_ptr, ",");']
 }
 foreach name, info : decls_to_check_map
   prefix = info[0]
