@@ -88,7 +88,7 @@ foreach idx : range(man_pages_in.length())
   man_out_filename = man_pages_out[idx]
 
   # Check if the .in file exists before trying to configure it
-  if not run_command('test', '-f', files(man_in_filename)[0]).returncode() == 0
+  if run_command('test', '-f', files(man_in_filename)[0]).returncode() != 0
     message('Man page source file ' + man_in_filename + ' not found. Skipping.')
     continue
   endif
