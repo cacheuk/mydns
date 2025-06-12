@@ -50,9 +50,9 @@ languages = ['es', 'fr', 'pt_BR']
 # Generate .po files from .pot (if needed, typically .po are maintained by translators)
 # And compile .po files to .mo files
 i18n.gettext(package_name,
+  pot_sources,
   preset: 'gnu', # Use gnu gettext conventions
   languages: languages,
-  sources: pot_sources,
   install: true
   # install_dir by default is get_option('localedir') / project_name / 'LC_MESSAGES'
   # For package_name 'mydns', this becomes <prefix>/<datadir>/locale/<lang>/LC_MESSAGES/mydns.mo
