@@ -139,7 +139,7 @@ if makeinfo.found() and run_command('test', '-f', texinfo_main_file).returncode(
   current_texinfo_deps = []
   foreach src_file_str : texinfo_sources
     if src_file_str == 'version.texi'
-      if configured_version_texi != ''
+      if configured_version_texi
         current_texinfo_deps += configured_version_texi
       endif
     else
