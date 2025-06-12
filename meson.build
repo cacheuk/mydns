@@ -152,10 +152,10 @@ endif
 
 # Global include directories for SQL and SSL
 # Must ensure these are actual paths before adding with -I
-if sql_include_dirs_str != '' and sql_include_dirs_str != None
+if sql_include_dirs_str != ''
   add_project_arguments('-I' + sql_include_dirs_str, language : 'c')
 endif
-if ssl_include_dirs_str != '' and ssl_include_dirs_str != None
+if ssl_include_dirs_str != ''
   add_project_arguments('-I' + ssl_include_dirs_str, language : 'c')
 endif
 
