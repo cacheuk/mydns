@@ -51,7 +51,7 @@ languages = ['es', 'fr', 'pt_BR']
 # And compile .po files to .mo files
 i18n.gettext(package_name,
   args: pot_sources,
-  preset: 'gnu', # Use gnu gettext conventions
+  preset: 'glib', # Use glib gettext conventions
   languages: languages,
   install: true
   # install_dir by default is get_option('localedir') / project_name / 'LC_MESSAGES'
