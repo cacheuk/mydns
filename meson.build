@@ -256,22 +256,46 @@ foreach name, info : decls_to_check_map
 endforeach
 
 # Other options from configure.ac
-enable_alias_val = 1 if get_option('enable-alias') else 0
-conf_data.set('ENABLE_ALIAS', enable_alias_val)
-enable_static_build_val = 1 if get_option('enable-static-build') else 0
-conf_data.set('ENABLE_STATIC_BUILD', enable_static_build_val)
-enable_profiling_val = 1 if get_option('enable-profiling') else 0
-conf_data.set('ENABLE_PROFILING', enable_profiling_val)
-enable_debug_val = 1 if get_option('enable-debug') else 0
-conf_data.set('ENABLE_DEBUG', enable_debug_val)
-enable_valgrind_val = 1 if get_option('enable-valgrind') else 0
-conf_data.set('ENABLE_VALGRIND', enable_valgrind_val)
-enable_strict_val = 1 if get_option('enable-strict') else 0
-conf_data.set('ENABLE_STRICT', enable_strict_val)
-enable_status_val = 1 if get_option('enable-status') else 0
-conf_data.set('ENABLE_STATUS', enable_status_val)
-disable_date_logging_val = 1 if get_option('disable-date-logging') else 0
-conf_data.set('DISABLE_DATE_LOGGING', disable_date_logging_val)
+if get_option('enable-alias')
+  conf_data.set('ENABLE_ALIAS', 1)
+else
+  conf_data.set('ENABLE_ALIAS', 0)
+endif
+if get_option('enable-static-build')
+  conf_data.set('ENABLE_STATIC_BUILD', 1)
+else
+  conf_data.set('ENABLE_STATIC_BUILD', 0)
+endif
+if get_option('enable-profiling')
+  conf_data.set('ENABLE_PROFILING', 1)
+else
+  conf_data.set('ENABLE_PROFILING', 0)
+endif
+if get_option('enable-debug')
+  conf_data.set('ENABLE_DEBUG', 1)
+else
+  conf_data.set('ENABLE_DEBUG', 0)
+endif
+if get_option('enable-valgrind')
+  conf_data.set('ENABLE_VALGRIND', 1)
+else
+  conf_data.set('ENABLE_VALGRIND', 0)
+endif
+if get_option('enable-strict')
+  conf_data.set('ENABLE_STRICT', 1)
+else
+  conf_data.set('ENABLE_STRICT', 0)
+endif
+if get_option('enable-status')
+  conf_data.set('ENABLE_STATUS', 1)
+else
+  conf_data.set('ENABLE_STATUS', 0)
+endif
+if get_option('disable-date-logging')
+  conf_data.set('DISABLE_DATE_LOGGING', 1)
+else
+  conf_data.set('DISABLE_DATE_LOGGING', 0)
+endif
 
 # Apply compiler flags based on options
 if get_option('enable-profiling')
