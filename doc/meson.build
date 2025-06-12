@@ -135,7 +135,7 @@ if makeinfo.found() and run_command('test', '-f', files(texinfo_main_file)[0]).r
   # If version.texi was configured, it's a generated file (in build dir).
   # Other texi files are sources.
   current_texinfo_deps = []
-  foreach src_file in texinfo_sources
+  foreach src_file : texinfo_sources
     if src_file == 'version.texi' and configured_version_texi != '' and configured_version_texi != files('version.texi')[0]
       # If version.texi was generated from version.texi.in, depend on the generated one.
       current_texinfo_deps += configured_version_texi
