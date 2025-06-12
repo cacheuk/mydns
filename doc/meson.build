@@ -83,7 +83,8 @@ man_section_map = {
 }
 
 # Process man pages
-foreach idx, man_in_filename : man_pages_in
+foreach idx : range(man_pages_in.length())
+  man_in_filename = man_pages_in[idx]
   man_out_filename = man_pages_out[idx]
 
   # Check if the .in file exists before trying to configure it
